@@ -20,7 +20,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class StatueRenderer extends TileEntitySpecialRenderer<StatueBlockEntity> {
     private static final Minecraft MINECRAFT = Minecraft.getMinecraft();
 
-    private ModelBase voxelModel = new VoxelModel();
+    private final ModelBase voxelModel = new VoxelModel();
 
     @Override
     public void render(StatueBlockEntity entity, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
