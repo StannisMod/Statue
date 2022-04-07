@@ -24,8 +24,6 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
     protected Map<String, OutlinedModelRenderer> identifierMap = new HashMap<>();
     protected double[] scale;
 
-    protected Map<String, Integer> playing = new HashMap<>();
-
     public OutlinedTabulaModel(TabulaModelContainer container) {
         this.textureWidth = container.getTextureWidth();
         this.textureHeight = container.getTextureHeight();
@@ -117,6 +115,7 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
             }
             box.render(scale);
         }
+        // TODO Write more robust algorithm
         for (String key : playing.keySet()) {
             playing.compute(key, (k, v) -> {
                 v--;
@@ -139,6 +138,10 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
 
     public Map<String, OutlinedModelRenderer> getCubes() {
         return this.cubes;
+    }
+
+    public Map<String, TabulaAnimationComponentContainer> getAnimations() {
+        return animations;
     }
 
     @Override
