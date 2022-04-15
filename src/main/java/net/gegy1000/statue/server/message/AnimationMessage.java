@@ -1,6 +1,7 @@
 package net.gegy1000.statue.server.message;
 
 import io.netty.buffer.ByteBuf;
+import net.gegy1000.statue.client.AnimationController;
 import net.ilexiconn.llibrary.server.network.AbstractMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -23,7 +24,8 @@ public class AnimationMessage extends AbstractMessage<AnimationMessage> {
 
     @Override
     public void onClientReceived(final Minecraft client, final AnimationMessage message, final EntityPlayer player, final MessageContext messageContext) {
-
+        AnimationController.get(player.world).start(message.pos, message.animation);
+        System.out.println("Received at controller");
     }
 
     @Override

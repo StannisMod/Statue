@@ -1,11 +1,14 @@
 package net.gegy1000.statue.server.provider.tabula;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import io.netty.buffer.ByteBuf;
 import net.gegy1000.statue.server.api.ImportableFile;
 import net.gegy1000.statue.server.api.ModelProvider;
 import net.gegy1000.statue.server.api.ProviderHandler;
 import net.gegy1000.statue.server.api.TextureProvider;
 import net.ilexiconn.llibrary.client.model.tabula.TabulaModelHandler;
+import net.ilexiconn.llibrary.client.model.tabula.container.TabulaAnimationContainer;
 import net.ilexiconn.llibrary.client.model.tabula.container.TabulaCubeContainer;
 import net.ilexiconn.llibrary.client.model.tabula.container.TabulaCubeGroupContainer;
 import net.ilexiconn.llibrary.client.model.tabula.container.TabulaModelContainer;
@@ -15,11 +18,7 @@ import net.minecraftforge.fml.common.network.ByteBufUtils;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -106,6 +105,11 @@ public class TabulaModelProvider implements ModelProvider<StatueTabulaModel, Imp
         for (TabulaCubeContainer cube : cubes) {
             this.serializeCube(buf, cube);
         }
+
+        buf.writeShort(model.getAnimations().size());
+        for (TabulaAnimationContainer anim : model.getAnimations()) {
+            serializeAnim(buf, anim);
+        }
     }
 
     @Override
@@ -128,7 +132,54 @@ public class TabulaModelProvider implements ModelProvider<StatueTabulaModel, Imp
             model.getCubes().add(this.deserializeCube(buf, null));
         }
 
+        int animCount = buf.readShort();
+        for (int i = 0; i < animCount; i++) {
+            model.getAnimations().add(deserializeAnim(buf));
+        }
+
         return new StatueTabulaModel(model);
+    }
+
+    private static final Gson SERIALIZER = new GsonBuilder().create();
+
+    protected TabulaAnimationContainer deserializeAnim(ByteBuf buf) {
+        return SERIALIZER.fromJson(ByteBufUtils.readUTF8String(buf), TabulaAnimationContainer.class);
+    }
+
+    protected void serializeAnim(ByteBuf buf, TabulaAnimationContainer anim) {
+        ByteBufUtils.writeUTF8String(buf, SERIALIZER.toJson(anim));
+    }
+
+    private static void writeArray(ByteBuf buf, double[] array) {
+        buf.writeInt(array.length);
+        for (final double v : array) {
+            buf.writeDouble(v);
+        }
+    }
+
+    private static double[] readArray(ByteBuf buf) {
+        double[] array = new double[buf.readInt()];
+        for (int i = 0; i < array.length; i++) {
+            array[i] = buf.readDouble();
+        }
+        return array;
+    }
+
+    private static void writeTriplet(ByteBuf buf, double[] triplet) {
+        if (triplet.length != 3) {
+            throw new IllegalArgumentException("Argument must be a triplet");
+        }
+        buf.writeDouble(triplet[0]);
+        buf.writeDouble(triplet[1]);
+        buf.writeDouble(triplet[2]);
+    }
+
+    private static double[] readTriplet(ByteBuf buf) {
+        double[] res = new double[3];
+        res[0] = buf.readDouble();
+        res[1] = buf.readDouble();
+        res[2] = buf.readDouble();
+        return res;
     }
 
     protected void serializeCubeGroup(ByteBuf buf, TabulaCubeGroupContainer group) {
@@ -190,12 +241,12 @@ public class TabulaModelProvider implements ModelProvider<StatueTabulaModel, Imp
         String name = ByteBufUtils.readUTF8String(buf);
         String identifier = ByteBufUtils.readUTF8String(buf);
 
-        int[] dimensions = new int[] { buf.readByte() & 0xFF, buf.readByte() & 0xFF, buf.readByte() & 0xFF };
-        int[] textureOffset = new int[] { buf.readShort(), buf.readShort() };
-        double[] position = new double[] { buf.readFloat(), buf.readFloat(), buf.readFloat() };
-        double[] offset = new double[] { buf.readFloat(), buf.readFloat(), buf.readFloat() };
-        double[] rotation = new double[] { buf.readFloat(), buf.readFloat(), buf.readFloat() };
-        double[] scale = new double[] { buf.readFloat(), buf.readFloat(), buf.readFloat() };
+        int[] dimensions = new int[]{buf.readByte() & 0xFF, buf.readByte() & 0xFF, buf.readByte() & 0xFF};
+        int[] textureOffset = new int[]{buf.readShort(), buf.readShort()};
+        double[] position = new double[]{buf.readFloat(), buf.readFloat(), buf.readFloat()};
+        double[] offset = new double[]{buf.readFloat(), buf.readFloat(), buf.readFloat()};
+        double[] rotation = new double[]{buf.readFloat(), buf.readFloat(), buf.readFloat()};
+        double[] scale = new double[]{buf.readFloat(), buf.readFloat(), buf.readFloat()};
         boolean mirror = buf.readBoolean();
 
         TabulaCubeContainer cube = new TabulaCubeContainer(name, identifier, parentIdentifier, dimensions, position, offset, rotation, scale, textureOffset, mirror, 100.0, 1.0, false);

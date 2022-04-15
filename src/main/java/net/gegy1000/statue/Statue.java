@@ -1,18 +1,15 @@
 package net.gegy1000.statue;
 
 import net.gegy1000.statue.server.ServerProxy;
-import net.gegy1000.statue.server.message.CreateTextureMessage;
-import net.gegy1000.statue.server.message.RemoveTextureMessage;
-import net.gegy1000.statue.server.message.SetLockedMessage;
-import net.gegy1000.statue.server.message.SetModelMessage;
-import net.gegy1000.statue.server.message.SetPropertiesMessage;
-import net.gegy1000.statue.server.message.TextureSectionMessage;
+import net.gegy1000.statue.server.command.AnimateCommand;
+import net.gegy1000.statue.server.message.*;
 import net.ilexiconn.llibrary.server.network.NetworkWrapper;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 
 import java.text.DecimalFormat;
@@ -31,7 +28,7 @@ public class Statue {
     @SidedProxy(serverSide = "net.gegy1000.statue.server.ServerProxy", clientSide = "net.gegy1000.statue.client.ClientProxy")
     public static ServerProxy PROXY;
 
-    @NetworkWrapper({ SetModelMessage.class, CreateTextureMessage.class, TextureSectionMessage.class, RemoveTextureMessage.class, SetPropertiesMessage.class, SetLockedMessage.class })
+    @NetworkWrapper({ SetModelMessage.class, CreateTextureMessage.class, TextureSectionMessage.class, RemoveTextureMessage.class, SetPropertiesMessage.class, SetLockedMessage.class, AnimationMessage.class})
     public static SimpleNetworkWrapper WRAPPER;
 
     public static DecimalFormat DEFAULT_FORMAT;
@@ -57,5 +54,10 @@ public class Statue {
     @Mod.EventHandler
     public void onPostInit(FMLPostInitializationEvent event) {
         PROXY.onPostInit();
+    }
+
+    @Mod.EventHandler
+    public void onServerStart(FMLServerStartingEvent event) {
+        event.registerServerCommand(new AnimateCommand());
     }
 }

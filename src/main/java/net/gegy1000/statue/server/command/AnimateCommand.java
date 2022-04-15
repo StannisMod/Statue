@@ -1,11 +1,17 @@
 package net.gegy1000.statue.server.command;
 
 import mcp.MethodsReturnNonnullByDefault;
+import net.gegy1000.statue.Statue;
+import net.gegy1000.statue.server.block.entity.StatueBlockEntity;
+import net.gegy1000.statue.server.message.AnimationMessage;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.command.WrongUsageException;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -25,13 +31,23 @@ public class AnimateCommand extends CommandBase {
     @Override
     public void execute(final MinecraftServer server, final ICommandSender sender, final String[] args) throws CommandException {
         if (args.length != 4) {
-            sender.sendMessage(new TextComponentString(getUsage(sender)));
-            return;
+            throw new WrongUsageException(getUsage(sender));
         }
-        String animation = args[0];
-        int x = Integer.parseInt(args[1]);
-        int y = Integer.parseInt(args[2]);
-        int z = Integer.parseInt(args[3]);
-
+        EntityPlayerMP player = getCommandSenderAsPlayer(sender);
+        try {
+            String animation = args[0];
+            int x = Integer.parseInt(args[1]);
+            int y = Integer.parseInt(args[2]);
+            int z = Integer.parseInt(args[3]);
+            BlockPos pos = new BlockPos(x, y, z);
+            TileEntity te = sender.getEntityWorld().getTileEntity(pos);
+            if (!(te instanceof StatueBlockEntity)) {
+                throw new WrongUsageException("There is no Statue at this coordinates");
+            }
+            Statue.WRAPPER.sendTo(new AnimationMessage(animation, pos), player);
+            System.out.println("Sent message");
+        } catch (NumberFormatException e) {
+            throw new WrongUsageException("Animation coordinates should be integers!");
+        }
     }
 }

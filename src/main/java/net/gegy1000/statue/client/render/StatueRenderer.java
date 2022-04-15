@@ -1,5 +1,6 @@
 package net.gegy1000.statue.client.render;
 
+import net.gegy1000.statue.client.model.OutlinedTabulaModel;
 import net.gegy1000.statue.server.block.BlockRegistry;
 import net.gegy1000.statue.server.block.StatueBlock;
 import net.gegy1000.statue.server.block.entity.StatueBlockEntity;
@@ -29,6 +30,9 @@ public class StatueRenderer extends TileEntitySpecialRenderer<StatueBlockEntity>
         ResourceLocation texture = null;
         if (entity != null) {
             model = entity.getModel();
+            if (model instanceof OutlinedTabulaModel) {
+                ((OutlinedTabulaModel) model).setRenderTarget(getWorld(), entity.getPos());
+            }
             texture = entity.getTexture();
             IBlockState state = this.getWorld().getBlockState(entity.getPos());
             if (state.getBlock() == BlockRegistry.STATUE) {
