@@ -46,7 +46,7 @@ public class AnimationController {
                 return play;
             }
             for (Map.Entry<String, List<TabulaAnimationComponentContainer>> entry : c.getComponents().entrySet()) {
-                map.put(entry.getKey(), new Animation(entry.getValue()));
+                map.put(entry.getKey(), new Animation(entry.getValue(), c.doesLoop()));
             }
             if (play == null) {
                 play = new HashMap<>();
@@ -95,6 +95,10 @@ public class AnimationController {
         return parts.get(partName);
     }
 
+    public boolean isRunningAnimation(BlockPos pos) {
+        return playing.get(pos) != null;
+    }
+
     /**
      * Performing the tick at all animations at the given pos
      * @param pos the position of Statue block
@@ -105,7 +109,7 @@ public class AnimationController {
             return;
         }
         playingAtPos.values().removeIf(remaining -> {
-            remaining.entrySet().removeIf(anim -> anim.getValue().tick());
+            remaining.values().removeIf(Animation::tick);
             return remaining.isEmpty();
         });
         if (playingAtPos.keySet().isEmpty()) {

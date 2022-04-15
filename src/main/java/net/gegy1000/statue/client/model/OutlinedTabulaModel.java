@@ -31,9 +31,8 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
             this.parseCube(cube, null);
         }
         container.getCubeGroups().forEach(this::parseCubeGroup);
-        // TODO Check the key of the animations map
         container.getAnimations().forEach(c -> {
-            animations.put(c.getIdentifier(), c);
+            animations.put(c.getName(), c);
             c.getComponents().values().forEach(lst -> lst.sort(Comparator.comparingInt(TabulaAnimationComponentContainer::getStartKey)));
         });
         this.updateDefaultPose();
@@ -80,15 +79,12 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
         return box;
     }
 
-    // TODO Rewrite handling transition variable
     private static AdvancedModelRenderer R;
 
-    private World world;
     private BlockPos pos;
     private AnimationController controller;
 
     public void setRenderTarget(World world, BlockPos pos) {
-        this.world = world;
         this.pos = pos;
         this.controller = AnimationController.get(world);
     }
@@ -96,7 +92,7 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
     /**
      * Renders the model. You SHOULD call {@code #setRenderTarget(World, BlockPos)} before rendering
      */
-    // /animate )(M9#$n&2-l,cY*f0e<5 -190 75 274
+    // /animate a1 -190 74 273
     @Override
     public void render(Entity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float rotationYaw, float rotationPitch, float scale) {
         this.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, rotationYaw, rotationPitch, scale, entity);
@@ -109,7 +105,7 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
             }
             if (pos != null) {
                 String identifier = entry.getKey();
-                // TODO Make more robust algorithm. Store the current playing component
+
                 for (String animId : animations.keySet()) {
                     Animation animation = controller.getAnimation(pos, animId, identifier);
                     if (animation == null) {
@@ -118,9 +114,13 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
                     TabulaAnimationComponentContainer c = animation.getCurrentComponent();
 
                     // copy info
-                    R.offsetX = (float) c.getPositionOffset()[0];
-                    R.offsetY = (float) c.getPositionOffset()[1];
-                    R.offsetZ = (float) c.getPositionOffset()[2];
+                    R.defaultOffsetX = (float) c.getPositionOffset()[0];
+                    R.defaultOffsetY = (float) c.getPositionOffset()[1];
+                    R.defaultOffsetZ = (float) c.getPositionOffset()[2];
+
+                    R.offsetX = (float) c.getPositionChange()[0];
+                    R.offsetY = (float) c.getPositionChange()[1];
+                    R.offsetZ = (float) c.getPositionChange()[2];
 
                     R.rotationPointX = (float) c.getRotationOffset()[0];
                     R.rotationPointY = (float) c.getRotationOffset()[1];
@@ -134,7 +134,7 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
                     R.scaleY = (float) c.getScaleChange()[1];
                     R.scaleZ = (float) c.getScaleChange()[2];
 
-                    box.transitionTo(R, animation.getTimeLeft(), c.getEndKey() - c.getStartKey());
+                    box.transitionTo(R, animation.getTimeLeft(), c.getLength());
                 }
             }
             box.render(scale);
