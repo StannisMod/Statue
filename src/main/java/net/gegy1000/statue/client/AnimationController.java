@@ -56,6 +56,14 @@ public class AnimationController {
         });
     }
 
+    public void stopAll(BlockPos pos) {
+        Map<String, Map<String, Animation>> anims = playing.get(pos);
+        if (anims == null) {
+            return;
+        }
+        anims.values().forEach(parts -> parts.values().forEach(Animation::stop));
+    }
+
     /**
      * Returns the parts of given animation at the given position. If
      * given animation is not exists, {@code null} should be returned. If block

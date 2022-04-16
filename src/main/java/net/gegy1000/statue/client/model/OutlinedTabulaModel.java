@@ -114,17 +114,17 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
                     TabulaAnimationComponentContainer c = animation.getCurrentComponent();
 
                     // copy info
-                    R.defaultOffsetX = (float) c.getPositionOffset()[0];
-                    R.defaultOffsetY = (float) c.getPositionOffset()[1];
-                    R.defaultOffsetZ = (float) c.getPositionOffset()[2];
+                    R.defaultOffsetX = (float) c.getPositionOffset()[0] / 16;
+                    R.defaultOffsetY = (float) c.getPositionOffset()[1] / 16;
+                    R.defaultOffsetZ = (float) c.getPositionOffset()[2] / 16;
 
-                    R.offsetX = (float) c.getPositionChange()[0];
-                    R.offsetY = (float) c.getPositionChange()[1];
-                    R.offsetZ = (float) c.getPositionChange()[2];
+                    R.offsetX = (float) c.getPositionChange()[0] / 16;
+                    R.offsetY = (float) c.getPositionChange()[1] / 16;
+                    R.offsetZ = (float) c.getPositionChange()[2] / 16;
 
-                    R.rotationPointX = (float) c.getRotationOffset()[0];
-                    R.rotationPointY = (float) c.getRotationOffset()[1];
-                    R.rotationPointZ = (float) c.getRotationOffset()[2];
+                    R.rotationPointX = (float) c.getRotationOffset()[0] / 16;
+                    R.rotationPointY = (float) c.getRotationOffset()[1] / 16;
+                    R.rotationPointZ = (float) c.getRotationOffset()[2] / 16;
 
                     R.rotateAngleX = (float) c.getRotationChange()[0];
                     R.rotateAngleY = (float) c.getRotationChange()[1];

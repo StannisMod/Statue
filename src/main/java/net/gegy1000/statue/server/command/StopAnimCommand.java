@@ -3,7 +3,7 @@ package net.gegy1000.statue.server.command;
 import mcp.MethodsReturnNonnullByDefault;
 import net.gegy1000.statue.Statue;
 import net.gegy1000.statue.server.block.entity.StatueBlockEntity;
-import net.gegy1000.statue.server.message.AnimationMessage;
+import net.gegy1000.statue.server.message.StopAnimationMessage;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -17,34 +17,33 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class AnimateCommand extends CommandBase {
+public class StopAnimCommand extends CommandBase {
     @Override
     public String getName() {
-        return "animate";
+        return "stopanim";
     }
 
     @Override
     public String getUsage(final ICommandSender sender) {
-        return "/animate <animation> <x> <y> <z>";
+        return "/stopanim <x> <y> <z>";
     }
 
     @Override
     public void execute(final MinecraftServer server, final ICommandSender sender, final String[] args) throws CommandException {
-        if (args.length != 4) {
+        if (args.length != 3) {
             throw new WrongUsageException(getUsage(sender));
         }
         EntityPlayerMP player = getCommandSenderAsPlayer(sender);
         try {
-            String animation = args[0];
-            int x = Integer.parseInt(args[1]);
-            int y = Integer.parseInt(args[2]);
-            int z = Integer.parseInt(args[3]);
+            int x = Integer.parseInt(args[0]);
+            int y = Integer.parseInt(args[1]);
+            int z = Integer.parseInt(args[2]);
             BlockPos pos = new BlockPos(x, y, z);
             TileEntity te = sender.getEntityWorld().getTileEntity(pos);
             if (!(te instanceof StatueBlockEntity)) {
                 throw new WrongUsageException("There is no Statue at this coordinates");
             }
-            Statue.WRAPPER.sendTo(new AnimationMessage(animation, pos), player);
+            Statue.WRAPPER.sendTo(new StopAnimationMessage(pos), player);
         } catch (NumberFormatException e) {
             throw new WrongUsageException("Animation coordinates should be integers!");
         }
