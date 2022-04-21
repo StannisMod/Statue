@@ -12,7 +12,7 @@ public class Animation {
     private int index;
 
     private final List<TabulaAnimationComponentContainer> components;
-    private boolean doesLoop;
+    private final boolean doesLoop;
 
     public Animation(List<TabulaAnimationComponentContainer> components, boolean doesLoop) {
         this.timeLeft = -1;
@@ -20,25 +20,6 @@ public class Animation {
         this.components = new ArrayList<>();
         this.components.addAll(components);
         this.doesLoop = doesLoop;
-        if (!components.isEmpty()) {
-            // make the reversed animation component
-            MutableTabulaAnimationComponentContainer pathToOrigin = new MutableTabulaAnimationComponentContainer();
-            pathToOrigin.startKey = this.components.get(this.components.size() - 1).getEndKey();
-            pathToOrigin.length = 20;
-            TabulaAnimationComponentContainer c = this.components.get(0);
-            pathToOrigin.opacityChange = c.getOpacityChange();
-            pathToOrigin.opacityOffset = c.getOpacityOffset();
-            pathToOrigin.posChange[0] = c.getPositionOffset()[0];
-            pathToOrigin.posChange[1] = c.getPositionOffset()[1];
-            pathToOrigin.posChange[2] = c.getPositionOffset()[2];
-            pathToOrigin.rotChange[0] = c.getRotationOffset()[0];
-            pathToOrigin.rotChange[1] = c.getRotationOffset()[1];
-            pathToOrigin.rotChange[2] = c.getRotationOffset()[2];
-            pathToOrigin.scaleChange[0] = c.getScaleOffset()[0];
-            pathToOrigin.scaleChange[1] = c.getScaleOffset()[1];
-            pathToOrigin.scaleChange[2] = c.getScaleOffset()[2];
-            this.components.add(pathToOrigin);
-        }
         tick();
     }
 
@@ -47,8 +28,7 @@ public class Animation {
      * @return true if animation is ended
      */
     public boolean tick() {
-        timeLeft++;
-        if (timeLeft == duration) {
+        if (timeLeft == -1 || timeLeft == duration) {
             index++;
             timeLeft = 0;
             if (index >= components.size()) {
@@ -59,16 +39,16 @@ public class Animation {
                 }
             }
             duration = components.get(index).getLength();
+        } else {
+            timeLeft++;
         }
         return false;
     }
 
     public void stop() {
-        doesLoop = false;
-        index = 0;
-        TabulaAnimationComponentContainer last = components.get(components.size() - 1);
+        index = -1;
+        timeLeft = -1;
         components.clear();
-        components.add(last);
     }
 
     public int getTimeLeft() {
@@ -76,6 +56,9 @@ public class Animation {
     }
 
     public TabulaAnimationComponentContainer getCurrentComponent() {
+        if (index == -1) {
+            return null;
+        }
         return components.get(index);
     }
 }

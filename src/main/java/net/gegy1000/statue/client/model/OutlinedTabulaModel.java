@@ -18,10 +18,10 @@ import java.util.Map;
 
 @SideOnly(Side.CLIENT)
 public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRenderer {
-    protected Map<String, OutlinedModelRenderer> cubes = new HashMap<>();
+    protected Map<String, AnimatedModelRenderer> cubes = new HashMap<>();
     protected Map<String, TabulaAnimationContainer> animations = new HashMap<>();
-    protected Map<String, OutlinedModelRenderer> rootBoxes = new HashMap<>();
-    protected Map<String, OutlinedModelRenderer> identifierMap = new HashMap<>();
+    protected Map<String, AnimatedModelRenderer> rootBoxes = new HashMap<>();
+    protected Map<String, AnimatedModelRenderer> identifierMap = new HashMap<>();
     protected double[] scale;
 
     public OutlinedTabulaModel(TabulaModelContainer container) {
@@ -33,6 +33,7 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
         container.getCubeGroups().forEach(this::parseCubeGroup);
         container.getAnimations().forEach(c -> {
             animations.put(c.getName(), c);
+            // sorting animation components by start time
             c.getComponents().values().forEach(lst -> lst.sort(Comparator.comparingInt(TabulaAnimationComponentContainer::getStartKey)));
         });
         this.updateDefaultPose();
@@ -49,8 +50,8 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
         container.getCubeGroups().forEach(this::parseCubeGroup);
     }
 
-    private void parseCube(TabulaCubeContainer cube, OutlinedModelRenderer parent) {
-        OutlinedModelRenderer box = this.createBox(cube);
+    private void parseCube(TabulaCubeContainer cube, AdvancedModelRenderer parent) {
+        AnimatedModelRenderer box = this.createBox(cube);
         this.cubes.put(cube.getName(), box);
         this.identifierMap.put(cube.getIdentifier(), box);
         if (parent != null) {
@@ -63,23 +64,25 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
         }
     }
 
-    protected OutlinedModelRenderer createBox(TabulaCubeContainer cube) {
+    protected AnimatedModelRenderer createBox(TabulaCubeContainer cube) {
         int[] textureOffset = cube.getTextureOffset();
         double[] position = cube.getPosition();
         double[] rotation = cube.getRotation();
         double[] offset = cube.getOffset();
+        double[] scale = cube.getScale();
         int[] dimensions = cube.getDimensions();
-        OutlinedModelRenderer box = new OutlinedModelRenderer(this, cube.getName(), textureOffset[0], textureOffset[1]);
+        AnimatedModelRenderer box = new AnimatedModelRenderer(this, cube.getName(), textureOffset[0], textureOffset[1], (float) cube.getOpacity());
         box.mirror = cube.isTextureMirrorEnabled();
         box.setRotationPoint((float) position[0], (float) position[1], (float) position[2]);
         box.addBox((float) offset[0], (float) offset[1], (float) offset[2], dimensions[0], dimensions[1], dimensions[2], 0.0F);
         box.rotateAngleX = (float) Math.toRadians(rotation[0]);
         box.rotateAngleY = (float) Math.toRadians(rotation[1]);
         box.rotateAngleZ = (float) Math.toRadians(rotation[2]);
+        box.scaleX = (float) scale[0];
+        box.scaleY = (float) scale[1];
+        box.scaleZ = (float) scale[2];
         return box;
     }
-
-    private static AdvancedModelRenderer R;
 
     private BlockPos pos;
     private AnimationController controller;
@@ -92,17 +95,15 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
     /**
      * Renders the model. You SHOULD call {@code #setRenderTarget(World, BlockPos)} before rendering
      */
-    // /animate a1 -190 74 273
+    // /animate x -190 74 273
     @Override
     public void render(Entity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float rotationYaw, float rotationPitch, float scale) {
         this.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, rotationYaw, rotationPitch, scale, entity);
         GlStateManager.pushMatrix();
         GlStateManager.scale(this.scale[0], this.scale[1], this.scale[2]);
-        for (Map.Entry<String, OutlinedModelRenderer> entry : this.rootBoxes.entrySet()) {
-            OutlinedModelRenderer box = entry.getValue();
-            if (R == null) {
-                R = new AdvancedModelRenderer(box.getModel());
-            }
+        for (Map.Entry<String, AnimatedModelRenderer> entry : this.rootBoxes.entrySet()) {
+            AnimatedModelRenderer box = entry.getValue();
+            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
             if (pos != null) {
                 String identifier = entry.getKey();
 
@@ -112,29 +113,12 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
                         continue;
                     }
                     TabulaAnimationComponentContainer c = animation.getCurrentComponent();
+                    if (c == null) {
+                        continue;
+                    }
 
-                    // copy info
-                    R.defaultOffsetX = (float) c.getPositionOffset()[0] / 16;
-                    R.defaultOffsetY = (float) c.getPositionOffset()[1] / 16;
-                    R.defaultOffsetZ = (float) c.getPositionOffset()[2] / 16;
-
-                    R.offsetX = (float) c.getPositionChange()[0] / 16;
-                    R.offsetY = (float) c.getPositionChange()[1] / 16;
-                    R.offsetZ = (float) c.getPositionChange()[2] / 16;
-
-                    R.rotationPointX = (float) c.getRotationOffset()[0] / 16;
-                    R.rotationPointY = (float) c.getRotationOffset()[1] / 16;
-                    R.rotationPointZ = (float) c.getRotationOffset()[2] / 16;
-
-                    R.rotateAngleX = (float) c.getRotationChange()[0];
-                    R.rotateAngleY = (float) c.getRotationChange()[1];
-                    R.rotateAngleZ = (float) c.getRotationChange()[2];
-
-                    R.scaleX = (float) c.getScaleChange()[0];
-                    R.scaleY = (float) c.getScaleChange()[1];
-                    R.scaleZ = (float) c.getScaleChange()[2];
-
-                    box.transitionTo(R, animation.getTimeLeft(), c.getLength());
+                    // apply changes
+                    box.transitionUsing(c, animation.getTimeLeft(), c.getLength());
                 }
             }
             box.render(scale);
@@ -145,15 +129,15 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
         GlStateManager.popMatrix();
     }
 
-    public OutlinedModelRenderer getCube(String name) {
+    public AnimatedModelRenderer getCube(String name) {
         return this.cubes.get(name);
     }
 
-    public OutlinedModelRenderer getCubeByIdentifier(String identifier) {
+    public AnimatedModelRenderer getCubeByIdentifier(String identifier) {
         return this.identifierMap.get(identifier);
     }
 
-    public Map<String, OutlinedModelRenderer> getCubes() {
+    public Map<String, AnimatedModelRenderer> getCubes() {
         return this.cubes;
     }
 
