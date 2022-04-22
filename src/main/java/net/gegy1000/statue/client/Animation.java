@@ -7,6 +7,7 @@ import java.util.List;
 
 public class Animation {
 
+    private int timeGlobal;
     private int timeLeft;
     private int duration;
     private int index;
@@ -35,14 +36,26 @@ public class Animation {
                 if (doesLoop && !components.isEmpty()) {
                     index = 0;
                 } else {
+                    timeGlobal = 0;
                     return true;
                 }
             }
             duration = components.get(index).getLength();
         } else {
-            timeLeft++;
+            if (canPlayCurrentComponent()) {
+                timeLeft++;
+            }
+            timeGlobal++;
         }
         return false;
+    }
+
+    private boolean canPlayCurrentComponent() {
+        if (index < 0) {
+            return false;
+        }
+        TabulaAnimationComponentContainer c = components.get(index);
+        return c.getStartKey() <= timeGlobal && timeGlobal <= c.getEndKey();
     }
 
     public void stop() {
@@ -56,7 +69,7 @@ public class Animation {
     }
 
     public TabulaAnimationComponentContainer getCurrentComponent() {
-        if (index == -1) {
+        if (!canPlayCurrentComponent()) {
             return null;
         }
         return components.get(index);
