@@ -1,7 +1,7 @@
 package net.gegy1000.statue.client.model;
 
+import net.gegy1000.statue.client.Animation;
 import net.ilexiconn.llibrary.client.model.tabula.container.TabulaAnimationComponentContainer;
-import net.ilexiconn.llibrary.client.model.tools.AdvancedModelBase;
 import net.minecraft.client.renderer.GlStateManager;
 
 public class AnimatedModelRenderer extends OutlinedModelRenderer {
@@ -12,14 +12,22 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
     private float opacity;
     private boolean hidden;
 
-    public AnimatedModelRenderer(final AdvancedModelBase model, final String name, final int textureX, final int textureY, final float opacity) {
+    private final String identifier;
+
+    public AnimatedModelRenderer(final OutlinedTabulaModel model, final String name, final String identifier, final int textureX, final int textureY, final float opacity) {
         super(model, name, textureX, textureY);
         this.opacity = opacity;
+        this.identifier = identifier;
+    }
+
+    @Override
+    public OutlinedTabulaModel getModel() {
+        return (OutlinedTabulaModel) super.getModel();
     }
 
     private void updateSnapshot() {
         if (snapshot == null) {
-            snapshot = new AnimatedModelRenderer(getModel(), "", 0, 0, 0.0F);
+            snapshot = new AnimatedModelRenderer(getModel(), "", "", 0, 0, 0.0F);
         }
         snapshot.rotateAngleX = this.rotateAngleX;
         snapshot.rotateAngleY = this.rotateAngleY;
@@ -83,6 +91,22 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
     @Override
     public void render(final float scale) {
         GlStateManager.color(opacity / 100.0F, opacity / 100.0F, opacity / 100.0F, 1.0F);
+        //GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        if (getModel().pos != null) {
+            for (String animId : getModel().animations.keySet()) {
+                Animation animation = getModel().controller.getAnimation(getModel().pos, animId, identifier);
+                if (animation == null) {
+                    continue;
+                }
+                TabulaAnimationComponentContainer c = animation.getCurrentComponent();
+                if (c == null) {
+                    continue;
+                }
+
+                // apply changes
+                this.transitionUsing(c, animation.getTimeLeft(), c.getLength());
+            }
+        }
         super.render(scale);
     }
 

@@ -1,6 +1,5 @@
 package net.gegy1000.statue.client.model;
 
-import net.gegy1000.statue.client.Animation;
 import net.gegy1000.statue.client.AnimationController;
 import net.ilexiconn.llibrary.client.model.tabula.container.*;
 import net.ilexiconn.llibrary.client.model.tools.AdvancedModelBase;
@@ -71,7 +70,7 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
         double[] offset = cube.getOffset();
         double[] scale = cube.getScale();
         int[] dimensions = cube.getDimensions();
-        AnimatedModelRenderer box = new AnimatedModelRenderer(this, cube.getName(), textureOffset[0], textureOffset[1], (float) cube.getOpacity());
+        AnimatedModelRenderer box = new AnimatedModelRenderer(this, cube.getName(), cube.getIdentifier(), textureOffset[0], textureOffset[1], (float) cube.getOpacity());
         box.mirror = cube.isTextureMirrorEnabled();
         box.setRotationPoint((float) position[0], (float) position[1], (float) position[2]);
         box.addBox((float) offset[0], (float) offset[1], (float) offset[2], dimensions[0], dimensions[1], dimensions[2], 0.0F);
@@ -84,8 +83,8 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
         return box;
     }
 
-    private BlockPos pos;
-    private AnimationController controller;
+    protected BlockPos pos;
+    protected AnimationController controller;
 
     public void setRenderTarget(World world, BlockPos pos) {
         this.pos = pos;
@@ -103,24 +102,6 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
         GlStateManager.scale(this.scale[0], this.scale[1], this.scale[2]);
         for (Map.Entry<String, AnimatedModelRenderer> entry : this.rootBoxes.entrySet()) {
             AnimatedModelRenderer box = entry.getValue();
-            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-            if (pos != null) {
-                String identifier = entry.getKey();
-
-                for (String animId : animations.keySet()) {
-                    Animation animation = controller.getAnimation(pos, animId, identifier);
-                    if (animation == null) {
-                        continue;
-                    }
-                    TabulaAnimationComponentContainer c = animation.getCurrentComponent();
-                    if (c == null) {
-                        continue;
-                    }
-
-                    // apply changes
-                    box.transitionUsing(c, animation.getTimeLeft(), c.getLength());
-                }
-            }
             box.render(scale);
         }
         if (pos != null) {
