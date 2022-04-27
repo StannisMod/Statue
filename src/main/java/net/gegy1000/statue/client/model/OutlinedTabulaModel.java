@@ -1,15 +1,20 @@
 package net.gegy1000.statue.client.model;
 
 import net.gegy1000.statue.client.AnimationController;
+import net.gegy1000.statue.client.ClientProxy;
 import net.ilexiconn.llibrary.client.model.tabula.container.*;
 import net.ilexiconn.llibrary.client.model.tools.AdvancedModelBase;
 import net.ilexiconn.llibrary.client.model.tools.AdvancedModelRenderer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -94,19 +99,33 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
     /**
      * Renders the model. You SHOULD call {@code #setRenderTarget(World, BlockPos)} before rendering
      */
-    // /animate x -190 74 273
+    // /animate f -190 74 273
     @Override
     public void render(Entity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float rotationYaw, float rotationPitch, float scale) {
         this.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, rotationYaw, rotationPitch, scale, entity);
         GlStateManager.pushMatrix();
+        GlStateManager.enableBlend();
+        GlStateManager.enableLighting();
+        GlStateManager.enableRescaleNormal();
+        RenderHelper.enableStandardItemLighting();
+        if (pos != null) {
+            int light = Minecraft.getMinecraft().world.getCombinedLight(pos, 0);
+            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, light % 65536, light >> 16);
+            GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        }
+        ClientProxy.MINECRAFT.entityRenderer.enableLightmap();
         GlStateManager.scale(this.scale[0], this.scale[1], this.scale[2]);
-        for (Map.Entry<String, AnimatedModelRenderer> entry : this.rootBoxes.entrySet()) {
-            AnimatedModelRenderer box = entry.getValue();
+        for (AnimatedModelRenderer box : this.rootBoxes.values()) {
             box.render(scale);
         }
         if (pos != null) {
-            controller.tick(pos);
+            if (controller.tick(pos)) {
+                this.resetToDefaultPose();
+            }
         }
+        GlStateManager.disableBlend();
+        GlStateManager.disableAlpha();
+        GlStateManager.disableRescaleNormal();
         GlStateManager.popMatrix();
     }
 

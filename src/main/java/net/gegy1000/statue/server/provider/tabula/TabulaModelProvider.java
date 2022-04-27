@@ -230,6 +230,9 @@ public class TabulaModelProvider implements ModelProvider<StatueTabulaModel, Imp
         buf.writeFloat((float) cube.getScale()[1]);
         buf.writeFloat((float) cube.getScale()[2]);
         buf.writeBoolean(cube.isTextureMirrorEnabled());
+        buf.writeDouble(cube.getOpacity());
+        buf.writeDouble(cube.getMCScale());
+        buf.writeBoolean(cube.isHidden());
 
         buf.writeShort(cube.getChildren().size());
         for (TabulaCubeContainer child : cube.getChildren()) {
@@ -248,8 +251,11 @@ public class TabulaModelProvider implements ModelProvider<StatueTabulaModel, Imp
         double[] rotation = new double[]{buf.readFloat(), buf.readFloat(), buf.readFloat()};
         double[] scale = new double[]{buf.readFloat(), buf.readFloat(), buf.readFloat()};
         boolean mirror = buf.readBoolean();
+        double opacity = buf.readDouble();
+        double mcScale = buf.readDouble();
+        boolean hidden = buf.readBoolean();
 
-        TabulaCubeContainer cube = new TabulaCubeContainer(name, identifier, parentIdentifier, dimensions, position, offset, rotation, scale, textureOffset, mirror, 100.0, 1.0, false);
+        TabulaCubeContainer cube = new TabulaCubeContainer(name, identifier, parentIdentifier, dimensions, position, offset, rotation, scale, textureOffset, mirror, opacity, mcScale, hidden);
 
         int cubeCount = buf.readShort();
         for (int i = 0; i < cubeCount; i++) {

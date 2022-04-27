@@ -35,8 +35,8 @@ public class Animation {
             if (index >= components.size()) {
                 if (doesLoop && !components.isEmpty()) {
                     index = 0;
-                } else {
                     timeGlobal = 0;
+                } else {
                     return true;
                 }
             }
@@ -66,6 +66,10 @@ public class Animation {
 
     public int getTimeLeft() {
         return timeLeft;
+    }
+
+    public boolean shouldLoadIdentity() {
+        return timeGlobal == 0;
     }
 
     public TabulaAnimationComponentContainer getCurrentComponent() {

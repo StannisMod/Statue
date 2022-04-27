@@ -1,5 +1,6 @@
 package net.gegy1000.statue;
 
+import net.gegy1000.statue.client.AnimationController;
 import net.gegy1000.statue.server.ServerProxy;
 import net.gegy1000.statue.server.command.AnimateCommand;
 import net.gegy1000.statue.server.command.StopAnimCommand;
@@ -7,10 +8,7 @@ import net.gegy1000.statue.server.message.*;
 import net.ilexiconn.llibrary.server.network.NetworkWrapper;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.event.*;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 
 import java.text.DecimalFormat;
@@ -61,5 +59,10 @@ public class Statue {
     public void onServerStart(FMLServerStartingEvent event) {
         event.registerServerCommand(new AnimateCommand());
         event.registerServerCommand(new StopAnimCommand());
+    }
+
+    @Mod.EventHandler
+    public void onServerExit(FMLServerStoppingEvent event) {
+        AnimationController.reset();
     }
 }

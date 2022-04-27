@@ -26,6 +26,10 @@ public class AnimationController {
         return c;
     }
 
+    public static void reset() {
+        CONTROLLERS.clear();
+    }
+
     private final Map<BlockPos, Map<String, Map<String, Animation>>> playing = new HashMap<>();
     private final World world;
 
@@ -111,17 +115,22 @@ public class AnimationController {
      * Performing the tick at all animations at the given pos
      * @param pos the position of Statue block
      */
-    public void tick(BlockPos pos) {
+    public boolean tick(BlockPos pos) {
         Map<String, Map<String, Animation>> playingAtPos = playing.get(pos);
         if (playingAtPos == null) {
-            return;
+            return false;
         }
         playingAtPos.values().removeIf(remaining -> {
+            if (remaining.values().stream().anyMatch(Animation::shouldLoadIdentity)) {
+                ((OutlinedTabulaModel) ((StatueBlockEntity) world.getTileEntity(pos)).getModel()).resetToDefaultPose();
+            }
             remaining.values().removeIf(Animation::tick);
             return remaining.isEmpty();
         });
         if (playingAtPos.keySet().isEmpty()) {
             playing.remove(pos);
+            return true;
         }
+        return false;
     }
 }

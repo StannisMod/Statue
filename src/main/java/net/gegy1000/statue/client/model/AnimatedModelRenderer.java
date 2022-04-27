@@ -10,6 +10,7 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
     private float lastSeenTime = -1;
 
     private float opacity;
+    private final float defaultOpacity;
     private boolean hidden;
 
     private final String identifier;
@@ -17,6 +18,7 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
     public AnimatedModelRenderer(final OutlinedTabulaModel model, final String name, final String identifier, final int textureX, final int textureY, final float opacity) {
         super(model, name, textureX, textureY);
         this.opacity = opacity;
+        this.defaultOpacity = opacity;
         this.identifier = identifier;
     }
 
@@ -25,7 +27,7 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
         return (OutlinedTabulaModel) super.getModel();
     }
 
-    private void updateSnapshot() {
+    private void updateSnapshot(final TabulaAnimationComponentContainer anim) {
         if (snapshot == null) {
             snapshot = new AnimatedModelRenderer(getModel(), "", "", 0, 0, 0.0F);
         }
@@ -45,22 +47,22 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
         snapshot.defaultPositionY = this.defaultPositionY;
         snapshot.defaultPositionZ = this.defaultPositionZ;
 
-        snapshot.offsetX = this.offsetX;
-        snapshot.offsetY = this.offsetY;
-        snapshot.offsetZ = this.offsetZ;
+        snapshot.offsetX = this.offsetX + (float) anim.getPositionOffset()[0];
+        snapshot.offsetY = this.offsetY + (float) anim.getPositionOffset()[1];
+        snapshot.offsetZ = this.offsetZ + (float) anim.getPositionOffset()[2];
 
         snapshot.scaleX = this.scaleX;
         snapshot.scaleY = this.scaleY;
         snapshot.scaleZ = this.scaleZ;
 
         snapshot.hidden = this.hidden;
-        snapshot.opacity = this.opacity;
+        snapshot.opacity = this.opacity + (float) anim.getOpacityOffset();
     }
 
     public void transitionUsing(final TabulaAnimationComponentContainer to, final float timer, final float maxTime) {
         if (lastSeenTime == -1 || lastSeenTime > timer) {
             // now we are starting new frame
-            updateSnapshot();
+            updateSnapshot(to);
         }
         lastSeenTime = timer;
 
@@ -72,13 +74,9 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
         this.rotationPointY = (float) to.getRotationOffset()[1] / 16;
         this.rotationPointZ = (float) to.getRotationOffset()[2] / 16;
 
-        this.offsetX = (snapshot.offsetX + snapshot.defaultPositionX + (float) to.getPositionChange()[0] * timer / maxTime) / 16;
-        this.offsetY = (snapshot.offsetY + snapshot.defaultPositionY + (float) to.getPositionChange()[1] * timer / maxTime) / 16;
-        this.offsetZ = (snapshot.offsetZ + snapshot.defaultPositionZ + (float) to.getPositionChange()[2] * timer / maxTime) / 16;
-
-        this.defaultOffsetX = (snapshot.defaultOffsetX + (float) to.getPositionOffset()[0] * timer / maxTime) / 16;
-        this.defaultOffsetY = (snapshot.defaultOffsetY + (float) to.getPositionOffset()[1] * timer / maxTime) / 16;
-        this.defaultOffsetZ = (snapshot.defaultOffsetZ + (float) to.getPositionOffset()[2] * timer / maxTime) / 16;
+        this.offsetX = snapshot.offsetX + (float) to.getPositionChange()[0] * timer / maxTime / 16;
+        this.offsetY = snapshot.offsetY + (float) to.getPositionChange()[1] * timer / maxTime / 16;
+        this.offsetZ = snapshot.offsetZ + (float) to.getPositionChange()[2] * timer / maxTime / 16;
 
         this.scaleX = snapshot.scaleX + (float) to.getScaleChange()[0] * timer / maxTime;
         this.scaleY = snapshot.scaleY + (float) to.getScaleChange()[1] * timer / maxTime;
@@ -90,7 +88,6 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
 
     @Override
     public void render(final float scale) {
-        GlStateManager.color(opacity / 100.0F, opacity / 100.0F, opacity / 100.0F, 1.0F);
         //GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         if (getModel().pos != null) {
             for (String animId : getModel().animations.keySet()) {
@@ -107,6 +104,7 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
                 this.transitionUsing(c, animation.getTimeLeft(), c.getLength());
             }
         }
+        GlStateManager.color(1.0F, 1.0F, 1.0F, opacity / 100.0F);
         super.render(scale);
     }
 
@@ -117,7 +115,7 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
         this.scaleY = 1.0F;
         this.scaleZ = 1.0F;
         this.hidden = false;
-        this.opacity = 100.0F;
+        this.opacity = defaultOpacity;
         lastSeenTime = -1;
     }
 }

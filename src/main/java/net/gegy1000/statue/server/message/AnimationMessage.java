@@ -2,11 +2,14 @@ package net.gegy1000.statue.server.message;
 
 import io.netty.buffer.ByteBuf;
 import net.gegy1000.statue.client.AnimationController;
+import net.gegy1000.statue.server.block.entity.StatueBlockEntity;
+import net.ilexiconn.llibrary.client.model.tools.AdvancedModelBase;
 import net.ilexiconn.llibrary.server.network.AbstractMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
@@ -24,6 +27,12 @@ public class AnimationMessage extends AbstractMessage<AnimationMessage> {
 
     @Override
     public void onClientReceived(final Minecraft client, final AnimationMessage message, final EntityPlayer player, final MessageContext messageContext) {
+        StatueBlockEntity te = (StatueBlockEntity) player.getEntityWorld().getTileEntity(message.pos);
+        if (te == null) {
+            player.sendMessage(new TextComponentString("Statue not found"));
+            return;
+        }
+        ((AdvancedModelBase) te.getModel()).resetToDefaultPose();
         AnimationController.get(player.world).start(message.pos, message.animation);
     }
 
