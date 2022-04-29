@@ -8,10 +8,10 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -33,7 +33,6 @@ public class AnimateCommand extends CommandBase {
         if (args.length != 4) {
             throw new WrongUsageException(getUsage(sender));
         }
-        EntityPlayerMP player = getCommandSenderAsPlayer(sender);
         try {
             String animation = args[0];
             int x = Integer.parseInt(args[1]);
@@ -44,7 +43,7 @@ public class AnimateCommand extends CommandBase {
             if (!(te instanceof StatueBlockEntity)) {
                 throw new WrongUsageException("There is no Statue at this coordinates");
             }
-            Statue.WRAPPER.sendTo(new AnimationMessage(animation, pos), player);
+            Statue.WRAPPER.sendToAllAround(new AnimationMessage(animation, pos), new NetworkRegistry.TargetPoint(sender.getEntityWorld().provider.getDimension(), x, y, z, 128));
         } catch (NumberFormatException e) {
             throw new WrongUsageException("Animation coordinates should be integers!");
         }

@@ -8,7 +8,6 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -33,7 +32,6 @@ public class StopAnimCommand extends CommandBase {
         if (args.length != 3) {
             throw new WrongUsageException(getUsage(sender));
         }
-        EntityPlayerMP player = getCommandSenderAsPlayer(sender);
         try {
             int x = Integer.parseInt(args[0]);
             int y = Integer.parseInt(args[1]);
@@ -43,7 +41,7 @@ public class StopAnimCommand extends CommandBase {
             if (!(te instanceof StatueBlockEntity)) {
                 throw new WrongUsageException("There is no Statue at this coordinates");
             }
-            Statue.WRAPPER.sendTo(new StopAnimationMessage(pos), player);
+            Statue.WRAPPER.sendToAll(new StopAnimationMessage(pos));
         } catch (NumberFormatException e) {
             throw new WrongUsageException("Animation coordinates should be integers!");
         }
