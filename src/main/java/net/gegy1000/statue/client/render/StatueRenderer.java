@@ -50,12 +50,12 @@ public class StatueRenderer extends TileEntitySpecialRenderer<StatueBlockEntity>
             GlStateManager.depthMask(false);
             GlStateManager.disableLighting();
             GlStateManager.translate(0.0F, -3.175F, 0.0F);
-            this.renderModel(this.voxelModel, 2.8F, 0.23F);
+            this.renderModel(this.voxelModel, 2.8F, 0.23F, partialTicks);
             GlStateManager.depthMask(true);
             GlStateManager.popMatrix();
             GlStateManager.enableLighting();
             GlStateManager.translate(0.0F, -3.0F, 0.0F);
-            this.renderModel(this.voxelModel, 2.666F, 1.0F);
+            this.renderModel(this.voxelModel, 2.666F, 1.0F, partialTicks);
             GlStateManager.enableTexture2D();
         } else if (MINECRAFT.objectMouseOver == null || (!entity.getPos().equals(MINECRAFT.objectMouseOver.getBlockPos()) || MINECRAFT.gameSettings.hideGUI)) {
             GlStateManager.rotate(facing.getHorizontalAngle(), 0.0F, 90.0F, 0.0F);
@@ -74,7 +74,7 @@ public class StatueRenderer extends TileEntitySpecialRenderer<StatueBlockEntity>
             GlStateManager.rotate(entity.getInterpolatedProperty(StatueProperty.ROTATION_Z, partialTicks), 0.0F, 0.0F, 1.0F);
             GlStateManager.scale(entity.getInterpolatedProperty(StatueProperty.SCALE_X, partialTicks), entity.getInterpolatedProperty(StatueProperty.SCALE_Y, partialTicks), entity.getInterpolatedProperty(StatueProperty.SCALE_Z, partialTicks));
             GlStateManager.translate(0.0F, -1.5F, 0.0F);
-            this.renderModel(model, 1.0F, 1.0F);
+            this.renderModel(model, 1.0F, 1.0F, partialTicks);
             GlStateManager.disableRescaleNormal();
             GlStateManager.enableCull();
         }
@@ -90,11 +90,11 @@ public class StatueRenderer extends TileEntitySpecialRenderer<StatueBlockEntity>
         GlStateManager.enableTexture2D();
     }
 
-    private void renderModel(ModelBase model, float scale, float lightness) {
+    private void renderModel(ModelBase model, float scale, float lightness, float partialTicks) {
         GlStateManager.pushMatrix();
         GlStateManager.color(lightness, lightness, lightness, 1.0F);
         GlStateManager.scale(scale, scale, scale);
-        model.render(null, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0625F);
+        model.render(null, partialTicks, 0.0F, 0.0F, 0.0F, 0.0F, 0.0625F);
         GlStateManager.popMatrix();
     }
 }

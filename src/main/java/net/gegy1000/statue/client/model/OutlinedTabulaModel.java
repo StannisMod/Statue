@@ -1,13 +1,10 @@
 package net.gegy1000.statue.client.model;
 
 import net.gegy1000.statue.client.AnimationController;
-import net.gegy1000.statue.client.ClientProxy;
 import net.ilexiconn.llibrary.client.model.tabula.container.*;
 import net.ilexiconn.llibrary.client.model.tools.AdvancedModelBase;
 import net.ilexiconn.llibrary.client.model.tools.AdvancedModelRenderer;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
@@ -77,6 +74,7 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
         int[] dimensions = cube.getDimensions();
         AnimatedModelRenderer box = new AnimatedModelRenderer(this, cube.getName(), cube.getIdentifier(), textureOffset[0], textureOffset[1], (float) cube.getOpacity());
         box.mirror = cube.isTextureMirrorEnabled();
+
         box.setRotationPoint((float) position[0], (float) position[1], (float) position[2]);
         box.addBox((float) offset[0], (float) offset[1], (float) offset[2], dimensions[0], dimensions[1], dimensions[2], 0.0F);
         box.rotateAngleX = (float) Math.toRadians(rotation[0]);
@@ -85,6 +83,8 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
         box.scaleX = (float) scale[0];
         box.scaleY = (float) scale[1];
         box.scaleZ = (float) scale[2];
+
+        box.pack();
         return box;
     }
 
@@ -96,12 +96,23 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
         this.controller = AnimationController.get(world);
     }
 
+    private float lastSeenPartialTick = 0;
+
     /**
      * Renders the model. You SHOULD call {@code #setRenderTarget(World, BlockPos)} before rendering
      */
-    // /animate f -190 74 273
+    // /animate 1 -190 74 273
     @Override
     public void render(Entity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float rotationYaw, float rotationPitch, float scale) {
+        if (pos != null) {
+            if (lastSeenPartialTick > limbSwing) {
+                if (controller.tick(pos)) {
+                    this.resetToDefaultPose();
+                }
+            }
+            lastSeenPartialTick = limbSwing;
+        }
+
         this.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, rotationYaw, rotationPitch, scale, entity);
         GlStateManager.pushMatrix();
         GlStateManager.enableBlend();
@@ -109,19 +120,14 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
         GlStateManager.enableRescaleNormal();
         RenderHelper.enableStandardItemLighting();
         if (pos != null) {
-            int light = Minecraft.getMinecraft().world.getCombinedLight(pos, 0);
-            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, light % 65536, light >> 16);
+//            int light = Minecraft.getMinecraft().world.getCombinedLight(pos, 0);
+//            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, light % 65536, light >> 16);
             GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         }
-        ClientProxy.MINECRAFT.entityRenderer.enableLightmap();
+        //ClientProxy.MINECRAFT.entityRenderer.enableLightmap();
         GlStateManager.scale(this.scale[0], this.scale[1], this.scale[2]);
         for (AnimatedModelRenderer box : this.rootBoxes.values()) {
-            box.render(scale);
-        }
-        if (pos != null) {
-            if (controller.tick(pos)) {
-                this.resetToDefaultPose();
-            }
+            box.render(scale, limbSwing);
         }
         GlStateManager.disableBlend();
         GlStateManager.disableAlpha();

@@ -2,6 +2,7 @@ package net.gegy1000.statue.client.model;
 
 import net.gegy1000.statue.client.Animation;
 import net.ilexiconn.llibrary.client.model.tabula.container.TabulaAnimationComponentContainer;
+import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 
 public class AnimatedModelRenderer extends OutlinedModelRenderer {
@@ -18,8 +19,23 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
     public AnimatedModelRenderer(final OutlinedTabulaModel model, final String name, final String identifier, final int textureX, final int textureY, final float opacity) {
         super(model, name, textureX, textureY);
         this.opacity = opacity;
-        this.defaultOpacity = opacity;
+        this.defaultOpacity = opacity / 100;
         this.identifier = identifier;
+    }
+
+    /**
+     * Performs the model preprocessing
+     */
+    public void pack() {
+        this.rotationPointX /= 16;
+        this.rotationPointY /= 16;
+        this.rotationPointZ /= 16;
+
+        this.defaultPositionX /= 16;
+        this.defaultPositionY /= 16;
+        this.defaultPositionZ /= 16;
+
+        this.opacity /= 100;
     }
 
     @Override
@@ -35,6 +51,10 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
         snapshot.rotateAngleY = this.rotateAngleY;
         snapshot.rotateAngleZ = this.rotateAngleZ;
 
+        snapshot.defaultRotationX = this.defaultRotationX + (float) anim.getRotationOffset()[0];
+        snapshot.defaultRotationY = this.defaultRotationY + (float) anim.getRotationOffset()[1];
+        snapshot.defaultRotationZ = this.defaultRotationZ + (float) anim.getRotationOffset()[2];
+
         snapshot.rotationPointX = this.rotationPointX;
         snapshot.rotationPointY = this.rotationPointY;
         snapshot.rotationPointZ = this.rotationPointZ;
@@ -47,47 +67,53 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
         snapshot.defaultPositionY = this.defaultPositionY;
         snapshot.defaultPositionZ = this.defaultPositionZ;
 
-        snapshot.offsetX = this.offsetX + (float) anim.getPositionOffset()[0];
-        snapshot.offsetY = this.offsetY + (float) anim.getPositionOffset()[1];
-        snapshot.offsetZ = this.offsetZ + (float) anim.getPositionOffset()[2];
+        snapshot.offsetX = this.offsetX + (float) anim.getPositionOffset()[0] / 16;
+        snapshot.offsetY = this.offsetY + (float) anim.getPositionOffset()[1] / 16;
+        snapshot.offsetZ = this.offsetZ + (float) anim.getPositionOffset()[2] / 16;
 
         snapshot.scaleX = this.scaleX;
         snapshot.scaleY = this.scaleY;
         snapshot.scaleZ = this.scaleZ;
 
         snapshot.hidden = this.hidden;
-        snapshot.opacity = this.opacity + (float) anim.getOpacityOffset();
+        snapshot.opacity = this.opacity + (float) anim.getOpacityOffset() / 100;
     }
 
-    public void transitionUsing(final TabulaAnimationComponentContainer to, final float timer, final float maxTime) {
+    public void transitionUsing(final TabulaAnimationComponentContainer to, final float timer, final float maxTime, float partialTicks) {
         if (lastSeenTime == -1 || lastSeenTime > timer) {
             // now we are starting new frame
             updateSnapshot(to);
         }
         lastSeenTime = timer;
 
-        this.rotateAngleX = (float) Math.toRadians(snapshot.rotateAngleX + (float) to.getRotationChange()[0] * timer / maxTime);
-        this.rotateAngleY = (float) Math.toRadians(snapshot.rotateAngleX + (float) to.getRotationChange()[1] * timer / maxTime);
-        this.rotateAngleZ = (float) Math.toRadians(snapshot.rotateAngleX + (float) to.getRotationChange()[2] * timer / maxTime);
+        this.rotateAngleX = animate(snapshot.rotateAngleX, (float) Math.toRadians(to.getRotationOffset()[0] + to.getRotationChange()[0]), timer, maxTime, partialTicks);
+        this.rotateAngleY = animate(snapshot.rotateAngleY, (float) Math.toRadians(to.getRotationOffset()[1] + to.getRotationChange()[1]), timer, maxTime, partialTicks);
+        this.rotateAngleZ = animate(snapshot.rotateAngleZ, (float) Math.toRadians(to.getRotationOffset()[2] + to.getRotationChange()[2]), timer, maxTime, partialTicks);
 
-        this.rotationPointX = (float) to.getRotationOffset()[0] / 16;
-        this.rotationPointY = (float) to.getRotationOffset()[1] / 16;
-        this.rotationPointZ = (float) to.getRotationOffset()[2] / 16;
+        this.rotationPointX = snapshot.rotationPointX;
+        this.rotationPointY = snapshot.rotationPointY;
+        this.rotationPointZ = snapshot.rotationPointZ;
 
-        this.offsetX = snapshot.offsetX + (float) to.getPositionChange()[0] * timer / maxTime / 16;
-        this.offsetY = snapshot.offsetY + (float) to.getPositionChange()[1] * timer / maxTime / 16;
-        this.offsetZ = snapshot.offsetZ + (float) to.getPositionChange()[2] * timer / maxTime / 16;
+        this.offsetX = animate(snapshot.offsetX, (float) to.getPositionChange()[0] / 16, timer, maxTime, partialTicks);
+        this.offsetY = animate(snapshot.offsetY, (float) to.getPositionChange()[1] / 16, timer, maxTime, partialTicks);
+        this.offsetZ = animate(snapshot.offsetZ, (float) to.getPositionChange()[2] / 16, timer, maxTime, partialTicks);
 
-        this.scaleX = snapshot.scaleX + (float) to.getScaleChange()[0] * timer / maxTime;
-        this.scaleY = snapshot.scaleY + (float) to.getScaleChange()[1] * timer / maxTime;
-        this.scaleZ = snapshot.scaleZ + (float) to.getScaleChange()[2] * timer / maxTime;
+        this.scaleX = animate(snapshot.scaleX, (float) to.getScaleChange()[0], timer, maxTime, partialTicks);
+        this.scaleY = animate(snapshot.scaleY, (float) to.getScaleChange()[1], timer, maxTime, partialTicks);
+        this.scaleZ = animate(snapshot.scaleZ, (float) to.getScaleChange()[2], timer, maxTime, partialTicks);
 
-        this.opacity = snapshot.opacity + (float) to.getOpacityChange() * timer / maxTime;
+        this.opacity = animate(snapshot.opacity, (float) to.getOpacityChange() / 100, timer, maxTime, partialTicks);
         this.isHidden = to.isHidden();
     }
 
-    @Override
-    public void render(final float scale) {
+    private float animate(float origin, float change, float timer, float maxTime, float partialTicks) {
+        float prevTimer = Math.max(0, timer - 1);
+        float prevChange = change * prevTimer / maxTime;
+        float curChange = change * timer / maxTime;
+        return origin + prevChange + (curChange - prevChange) * partialTicks;
+    }
+
+    public void render(final float scale, final float partialTicks) {
         //GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         if (getModel().pos != null) {
             for (String animId : getModel().animations.keySet()) {
@@ -101,11 +127,41 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
                 }
 
                 // apply changes
-                this.transitionUsing(c, animation.getTimeLeft(), c.getLength());
+                this.transitionUsing(c, animation.getTimeLeft(), c.getLength(), partialTicks);
             }
         }
-        GlStateManager.color(1.0F, 1.0F, 1.0F, opacity / 100.0F);
-        super.render(scale);
+
+        GlStateManager.color(1.0F, 1.0F, 1.0F, opacity);
+
+        if (!this.isHidden) {
+            if (this.showModel) {
+                GlStateManager.pushMatrix();
+                if (!this.compiled) {
+                    this.compileDisplayList(scale);
+                }
+                GlStateManager.translate(this.offsetX, this.offsetY, this.offsetZ);
+                GlStateManager.translate(this.rotationPointX * scale, this.rotationPointY * scale, this.rotationPointZ * scale);
+                if (this.rotateAngleZ != 0.0F) {
+                    GlStateManager.rotate((float) Math.toDegrees(this.rotateAngleZ), 0.0F, 0.0F, 1.0F);
+                }
+                if (this.rotateAngleY != 0.0F) {
+                    GlStateManager.rotate((float) Math.toDegrees(this.rotateAngleY), 0.0F, 1.0F, 0.0F);
+                }
+                if (this.rotateAngleX != 0.0F) {
+                    GlStateManager.rotate((float) Math.toDegrees(this.rotateAngleX), 1.0F, 0.0F, 0.0F);
+                }
+                if (this.scaleX != 1.0F || this.scaleY != 1.0F || this.scaleZ != 1.0F) {
+                    GlStateManager.scale(this.scaleX, this.scaleY, this.scaleZ);
+                }
+                GlStateManager.callList(this.displayList);
+                if (this.childModels != null) {
+                    for (ModelRenderer childModel : this.childModels) {
+                        ((AnimatedModelRenderer) childModel).render(scale, partialTicks);
+                    }
+                }
+                GlStateManager.popMatrix();
+            }
+        }
     }
 
     @Override
