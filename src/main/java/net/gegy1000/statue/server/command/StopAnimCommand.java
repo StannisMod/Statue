@@ -9,6 +9,7 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.tileentity.CommandBlockBaseLogic;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 
@@ -25,6 +26,11 @@ public class StopAnimCommand extends CommandBase {
     @Override
     public String getUsage(final ICommandSender sender) {
         return "/stopanim <x> <y> <z>";
+    }
+
+    @Override
+    public boolean checkPermission(final MinecraftServer server, final ICommandSender sender) {
+        return super.checkPermission(server, sender) || sender instanceof CommandBlockBaseLogic;
     }
 
     @Override
