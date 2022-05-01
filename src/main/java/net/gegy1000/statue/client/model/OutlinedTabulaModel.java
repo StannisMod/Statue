@@ -83,8 +83,6 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
         box.scaleX = (float) scale[0];
         box.scaleY = (float) scale[1];
         box.scaleZ = (float) scale[2];
-
-        box.pack();
         return box;
     }
 

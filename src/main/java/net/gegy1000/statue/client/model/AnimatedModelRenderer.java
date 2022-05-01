@@ -19,7 +19,7 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
     public AnimatedModelRenderer(final OutlinedTabulaModel model, final String name, final String identifier, final int textureX, final int textureY, final float opacity) {
         super(model, name, textureX, textureY);
         this.opacity = opacity;
-        this.defaultOpacity = opacity / 100;
+        this.defaultOpacity = opacity;
         this.identifier = identifier;
     }
 
@@ -47,9 +47,9 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
         if (snapshot == null) {
             snapshot = new AnimatedModelRenderer(getModel(), "", "", 0, 0, 0.0F);
         }
-        snapshot.rotateAngleX = this.rotateAngleX;
-        snapshot.rotateAngleY = this.rotateAngleY;
-        snapshot.rotateAngleZ = this.rotateAngleZ;
+        snapshot.rotateAngleX = (float) Math.toRadians(this.rotateAngleX);
+        snapshot.rotateAngleY = (float) Math.toRadians(this.rotateAngleY);
+        snapshot.rotateAngleZ = (float) Math.toRadians(this.rotateAngleZ);
 
         snapshot.defaultRotationX = this.defaultRotationX + (float) anim.getRotationOffset()[0];
         snapshot.defaultRotationY = this.defaultRotationY + (float) anim.getRotationOffset()[1];
@@ -59,24 +59,24 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
         snapshot.rotationPointY = this.rotationPointY;
         snapshot.rotationPointZ = this.rotationPointZ;
 
-        snapshot.defaultOffsetX = this.defaultOffsetX;
-        snapshot.defaultOffsetY = this.defaultOffsetY;
-        snapshot.defaultOffsetZ = this.defaultOffsetZ;
+        snapshot.defaultOffsetX = this.defaultOffsetX / 16;
+        snapshot.defaultOffsetY = this.defaultOffsetY / 16;
+        snapshot.defaultOffsetZ = this.defaultOffsetZ / 16;
 
         snapshot.defaultPositionX = this.defaultPositionX;
         snapshot.defaultPositionY = this.defaultPositionY;
         snapshot.defaultPositionZ = this.defaultPositionZ;
 
-        snapshot.offsetX = this.offsetX + (float) anim.getPositionOffset()[0] / 16;
-        snapshot.offsetY = this.offsetY + (float) anim.getPositionOffset()[1] / 16;
-        snapshot.offsetZ = this.offsetZ + (float) anim.getPositionOffset()[2] / 16;
+        snapshot.offsetX = this.offsetX / 16 + (float) anim.getPositionOffset()[0] / 16;
+        snapshot.offsetY = this.offsetY / 16 + (float) anim.getPositionOffset()[1] / 16;
+        snapshot.offsetZ = this.offsetZ / 16 + (float) anim.getPositionOffset()[2] / 16;
 
         snapshot.scaleX = this.scaleX;
         snapshot.scaleY = this.scaleY;
         snapshot.scaleZ = this.scaleZ;
 
         snapshot.hidden = this.hidden;
-        snapshot.opacity = this.opacity + (float) anim.getOpacityOffset() / 100;
+        snapshot.opacity = this.opacity / 100 + (float) anim.getOpacityOffset() / 100;
     }
 
     public void transitionUsing(final TabulaAnimationComponentContainer to, final float timer, final float maxTime, float partialTicks) {
