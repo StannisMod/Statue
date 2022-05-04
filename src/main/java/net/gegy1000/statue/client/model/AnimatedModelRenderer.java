@@ -67,16 +67,16 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
         snapshot.defaultPositionY = this.defaultPositionY;
         snapshot.defaultPositionZ = this.defaultPositionZ;
 
-        snapshot.offsetX = this.offsetX / 16 + (float) anim.getPositionOffset()[0] / 16;
-        snapshot.offsetY = this.offsetY / 16 + (float) anim.getPositionOffset()[1] / 16;
-        snapshot.offsetZ = this.offsetZ / 16 + (float) anim.getPositionOffset()[2] / 16;
+        snapshot.offsetX = this.offsetX + (float) anim.getPositionOffset()[0];
+        snapshot.offsetY = this.offsetY + (float) anim.getPositionOffset()[1];
+        snapshot.offsetZ = this.offsetZ + (float) anim.getPositionOffset()[2];
 
         snapshot.scaleX = this.scaleX;
         snapshot.scaleY = this.scaleY;
         snapshot.scaleZ = this.scaleZ;
 
         snapshot.hidden = this.hidden;
-        snapshot.opacity = this.opacity / 100 + (float) anim.getOpacityOffset() / 100;
+        snapshot.opacity = this.opacity + (float) anim.getOpacityOffset();
     }
 
     public void transitionUsing(final TabulaAnimationComponentContainer to, final float timer, final float maxTime, float partialTicks) {
@@ -94,15 +94,15 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
         this.rotationPointY = snapshot.rotationPointY;
         this.rotationPointZ = snapshot.rotationPointZ;
 
-        this.offsetX = animate(snapshot.offsetX, (float) to.getPositionChange()[0] / 16, timer, maxTime, partialTicks);
-        this.offsetY = animate(snapshot.offsetY, (float) to.getPositionChange()[1] / 16, timer, maxTime, partialTicks);
-        this.offsetZ = animate(snapshot.offsetZ, (float) to.getPositionChange()[2] / 16, timer, maxTime, partialTicks);
+        this.offsetX = animate(snapshot.offsetX, (float) to.getPositionChange()[0], timer, maxTime, partialTicks);
+        this.offsetY = animate(snapshot.offsetY, (float) to.getPositionChange()[1], timer, maxTime, partialTicks);
+        this.offsetZ = animate(snapshot.offsetZ, (float) to.getPositionChange()[2], timer, maxTime, partialTicks);
 
         this.scaleX = animate(snapshot.scaleX, (float) to.getScaleChange()[0], timer, maxTime, partialTicks);
         this.scaleY = animate(snapshot.scaleY, (float) to.getScaleChange()[1], timer, maxTime, partialTicks);
         this.scaleZ = animate(snapshot.scaleZ, (float) to.getScaleChange()[2], timer, maxTime, partialTicks);
 
-        this.opacity = animate(snapshot.opacity, (float) to.getOpacityChange() / 100, timer, maxTime, partialTicks);
+        this.opacity = animate(snapshot.opacity, (float) to.getOpacityChange(), timer, maxTime, partialTicks);
         this.isHidden = to.isHidden();
     }
 
@@ -131,7 +131,7 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
             }
         }
 
-        GlStateManager.color(1.0F, 1.0F, 1.0F, opacity);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, opacity / 100.0F);
 
         if (!this.isHidden) {
             if (this.showModel) {
@@ -139,7 +139,7 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
                 if (!this.compiled) {
                     this.compileDisplayList(scale);
                 }
-                GlStateManager.translate(this.offsetX, this.offsetY, this.offsetZ);
+                GlStateManager.translate(this.offsetX / 16, this.offsetY / 16, this.offsetZ / 16);
                 GlStateManager.translate(this.rotationPointX * scale, this.rotationPointY * scale, this.rotationPointZ * scale);
                 if (this.rotateAngleZ != 0.0F) {
                     GlStateManager.rotate((float) Math.toDegrees(this.rotateAngleZ), 0.0F, 0.0F, 1.0F);
