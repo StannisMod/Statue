@@ -89,7 +89,7 @@ public class ClientEventHandler {
         GlStateManager.scale(entity.getInterpolatedProperty(StatueProperty.SCALE_X, partialTicks), entity.getInterpolatedProperty(StatueProperty.SCALE_Y, partialTicks), entity.getInterpolatedProperty(StatueProperty.SCALE_Z, partialTicks));
         GlStateManager.translate(0.0F, -1.5F, 0.0F);
         GlStateManager.depthMask(false);
-        outlineRenderer.renderOutlines(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0625F);
+        outlineRenderer.renderOutlines(partialTicks, 0.0F, 0.0F, 0.0F, 0.0F, 0.0625F);
         GlStateManager.depthMask(true);
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.enableLighting();
@@ -99,7 +99,7 @@ public class ClientEventHandler {
             ClientProxy.MINECRAFT.getTextureManager().bindTexture(texture);
         }
         GlStateManager.enableBlend();
-        model.render(null, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0625F);
+        model.render(null, partialTicks, 0.0F, 0.0F, 0.0F, 0.0F, 0.0625F);
         GlStateManager.enableTexture2D();
         event.setCanceled(true);
         ClientProxy.MINECRAFT.entityRenderer.disableLightmap();

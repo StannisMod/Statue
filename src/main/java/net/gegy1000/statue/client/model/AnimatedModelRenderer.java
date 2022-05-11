@@ -23,21 +23,6 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
         this.identifier = identifier;
     }
 
-    /**
-     * Performs the model preprocessing
-     */
-    public void pack() {
-        this.rotationPointX /= 16;
-        this.rotationPointY /= 16;
-        this.rotationPointZ /= 16;
-
-        this.defaultPositionX /= 16;
-        this.defaultPositionY /= 16;
-        this.defaultPositionZ /= 16;
-
-        this.opacity /= 100;
-    }
-
     @Override
     public OutlinedTabulaModel getModel() {
         return (OutlinedTabulaModel) super.getModel();
@@ -47,9 +32,9 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
         if (snapshot == null) {
             snapshot = new AnimatedModelRenderer(getModel(), "", "", 0, 0, 0.0F);
         }
-        snapshot.rotateAngleX = (float) Math.toRadians(this.rotateAngleX);
-        snapshot.rotateAngleY = (float) Math.toRadians(this.rotateAngleY);
-        snapshot.rotateAngleZ = (float) Math.toRadians(this.rotateAngleZ);
+        snapshot.rotateAngleX = this.rotateAngleX;
+        snapshot.rotateAngleY = this.rotateAngleY;
+        snapshot.rotateAngleZ = this.rotateAngleZ;
 
         snapshot.defaultRotationX = this.defaultRotationX + (float) anim.getRotationOffset()[0];
         snapshot.defaultRotationY = this.defaultRotationY + (float) anim.getRotationOffset()[1];
@@ -59,9 +44,9 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
         snapshot.rotationPointY = this.rotationPointY;
         snapshot.rotationPointZ = this.rotationPointZ;
 
-        snapshot.defaultOffsetX = this.defaultOffsetX / 16;
-        snapshot.defaultOffsetY = this.defaultOffsetY / 16;
-        snapshot.defaultOffsetZ = this.defaultOffsetZ / 16;
+        snapshot.defaultOffsetX = this.defaultOffsetX;
+        snapshot.defaultOffsetY = this.defaultOffsetY;
+        snapshot.defaultOffsetZ = this.defaultOffsetZ;
 
         snapshot.defaultPositionX = this.defaultPositionX;
         snapshot.defaultPositionY = this.defaultPositionY;
@@ -114,7 +99,6 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
     }
 
     public void render(final float scale, final float partialTicks) {
-        //GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         if (getModel().pos != null) {
             for (String animId : getModel().animations.keySet()) {
                 Animation animation = getModel().controller.getAnimation(getModel().pos, animId, identifier);

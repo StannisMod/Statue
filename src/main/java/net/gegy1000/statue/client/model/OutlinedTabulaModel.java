@@ -103,7 +103,7 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
     @Override
     public void render(Entity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float rotationYaw, float rotationPitch, float scale) {
         if (pos != null) {
-            if (lastSeenPartialTick > limbSwing) {
+            if (lastSeenPartialTick >= limbSwing) {
                 if (controller.tick(pos)) {
                     this.resetToDefaultPose();
                 }
@@ -153,7 +153,7 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
     public void renderOutlines(float limbSwing, float limbSwingAmount, float ageInTicks, float rotationYaw, float rotationPitch, float scale) {
         this.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, rotationYaw, rotationPitch, scale, null);
         GlStateManager.pushMatrix();
-        for (OutlinedModelRenderer cube : this.rootBoxes.values()) {
+        for (AnimatedModelRenderer cube : this.rootBoxes.values()) {
             cube.renderOutline(scale);
         }
         GlStateManager.popMatrix();
