@@ -2,8 +2,13 @@ package net.gegy1000.statue.client.model;
 
 import net.gegy1000.statue.client.Animation;
 import net.ilexiconn.llibrary.client.model.tabula.container.TabulaAnimationComponentContainer;
+import net.minecraft.client.model.ModelBox;
 import net.minecraft.client.model.ModelRenderer;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import org.lwjgl.opengl.GL11;
 
 public class AnimatedModelRenderer extends OutlinedModelRenderer {
 
@@ -141,6 +146,70 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
                 if (this.childModels != null) {
                     for (ModelRenderer childModel : this.childModels) {
                         ((AnimatedModelRenderer) childModel).render(scale, partialTicks);
+                    }
+                }
+                GlStateManager.popMatrix();
+            }
+        }
+    }
+
+    public void renderOutline(float scale) {
+        if (!this.isHidden) {
+            if (this.showModel) {
+                GlStateManager.pushMatrix();
+                GlStateManager.translate(this.offsetX / 16, this.offsetY / 16, this.offsetZ / 16);
+                GlStateManager.translate(this.rotationPointX * scale, this.rotationPointY * scale, this.rotationPointZ * scale);
+                if (this.rotateAngleZ != 0.0F) {
+                    GlStateManager.rotate((float) Math.toDegrees(this.rotateAngleZ), 0.0F, 0.0F, 1.0F);
+                }
+                if (this.rotateAngleY != 0.0F) {
+                    GlStateManager.rotate((float) Math.toDegrees(this.rotateAngleY), 0.0F, 1.0F, 0.0F);
+                }
+                if (this.rotateAngleX != 0.0F) {
+                    GlStateManager.rotate((float) Math.toDegrees(this.rotateAngleX), 1.0F, 0.0F, 0.0F);
+                }
+                if (this.scaleX != 1.0F || this.scaleY != 1.0F || this.scaleZ != 1.0F) {
+                    GlStateManager.scale(this.scaleX, this.scaleY, this.scaleZ);
+                }
+
+                ModelBox box = this.cubeList.get(0);
+                Tessellator tessellator = Tessellator.getInstance();
+                GlStateManager.glLineWidth(16.0F);
+                BufferBuilder builder = tessellator.getBuffer();
+                builder.begin(GL11.GL_LINE_STRIP, DefaultVertexFormats.POSITION);
+                builder.pos(box.posX1 * scale, box.posY1 * scale, box.posZ1 * scale).endVertex();
+                builder.pos(box.posX2 * scale, box.posY1 * scale, box.posZ1 * scale).endVertex();
+                builder.pos(box.posX2 * scale, box.posY1 * scale, box.posZ2 * scale).endVertex();
+                builder.pos(box.posX1 * scale, box.posY1 * scale, box.posZ2 * scale).endVertex();
+                builder.pos(box.posX1 * scale, box.posY1 * scale, box.posZ1 * scale).endVertex();
+                tessellator.draw();
+                builder.begin(GL11.GL_LINE_STRIP, DefaultVertexFormats.POSITION);
+                builder.pos(box.posX1 * scale, box.posY2 * scale, box.posZ1 * scale).endVertex();
+                builder.pos(box.posX2 * scale, box.posY2 * scale, box.posZ1 * scale).endVertex();
+                builder.pos(box.posX2 * scale, box.posY2 * scale, box.posZ2 * scale).endVertex();
+                builder.pos(box.posX1 * scale, box.posY2 * scale, box.posZ2 * scale).endVertex();
+                builder.pos(box.posX1 * scale, box.posY2 * scale, box.posZ1 * scale).endVertex();
+                tessellator.draw();
+                builder.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION);
+                builder.pos(box.posX1 * scale, box.posY1 * scale, box.posZ1 * scale).endVertex();
+                builder.pos(box.posX1 * scale, box.posY2 * scale, box.posZ1 * scale).endVertex();
+                tessellator.draw();
+                builder.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION);
+                builder.pos(box.posX2 * scale, box.posY1 * scale, box.posZ1 * scale).endVertex();
+                builder.pos(box.posX2 * scale, box.posY2 * scale, box.posZ1 * scale).endVertex();
+                tessellator.draw();
+                builder.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION);
+                builder.pos(box.posX1 * scale, box.posY1 * scale, box.posZ2 * scale).endVertex();
+                builder.pos(box.posX1 * scale, box.posY2 * scale, box.posZ2 * scale).endVertex();
+                builder.pos(box.posX2 * scale, box.posY1 * scale, box.posZ2 * scale).endVertex();
+                builder.pos(box.posX2 * scale, box.posY2 * scale, box.posZ2 * scale).endVertex();
+                tessellator.draw();
+
+                if (this.childModels != null) {
+                    for (ModelRenderer childModel : this.childModels) {
+                        if (childModel instanceof OutlinedModelRenderer) {
+                            ((OutlinedModelRenderer) childModel).renderOutline(scale);
+                        }
                     }
                 }
                 GlStateManager.popMatrix();
