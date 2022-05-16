@@ -151,11 +151,6 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
 
     @Override
     public void renderOutlines(float limbSwing, float limbSwingAmount, float ageInTicks, float rotationYaw, float rotationPitch, float scale) {
-        this.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, rotationYaw, rotationPitch, scale, null);
-        GlStateManager.pushMatrix();
-        for (AnimatedModelRenderer cube : this.rootBoxes.values()) {
-            cube.renderOutline(scale);
-        }
-        GlStateManager.popMatrix();
+        // empty stub here
     }
 }
