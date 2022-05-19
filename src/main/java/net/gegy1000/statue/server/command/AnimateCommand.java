@@ -31,7 +31,7 @@ public class AnimateCommand extends CommandBase {
 
     @Override
     public boolean checkPermission(final MinecraftServer server, final ICommandSender sender) {
-        return super.checkPermission(server, sender) || sender instanceof CommandBlockBaseLogic;
+        return true;
     }
 
     @Override
