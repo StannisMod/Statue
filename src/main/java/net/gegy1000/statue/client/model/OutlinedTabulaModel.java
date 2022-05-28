@@ -104,9 +104,7 @@ public class OutlinedTabulaModel extends AdvancedModelBase implements OutlineRen
     public void render(Entity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float rotationYaw, float rotationPitch, float scale) {
         if (pos != null) {
             if (lastSeenPartialTick >= limbSwing) {
-                if (controller.tick(pos)) {
-                    this.resetToDefaultPose();
-                }
+                controller.tick(pos);
             }
             lastSeenPartialTick = limbSwing;
         }
