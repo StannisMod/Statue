@@ -30,7 +30,7 @@ public class AnimationController {
         CONTROLLERS.clear();
     }
 
-    private final Map<BlockPos, Map<String, Map<String, Animation>>> playing = new HashMap<>();
+    private final Map<BlockPos, Map<String, Animation>> playing = new HashMap<>();
     private final World world;
 
     public AnimationController(World world) {
@@ -44,28 +44,28 @@ public class AnimationController {
      */
     public void start(BlockPos pos, String name) {
         playing.compute(pos, (k, play) -> {
-            Map<String, Animation> map = new HashMap<>();
+            Map<String, AnimationComponent> map = new HashMap<>();
             TabulaAnimationContainer c = getAnimComponents(pos, name);
             if (c == null) {
                 return play;
             }
             for (Map.Entry<String, List<TabulaAnimationComponentContainer>> entry : c.getComponents().entrySet()) {
-                map.put(entry.getKey(), new Animation(entry.getValue(), c.doesLoop()));
+                map.put(entry.getKey(), new AnimationComponent(entry.getValue()));
             }
             if (play == null) {
                 play = new HashMap<>();
             }
-            play.put(name, map);
+            play.put(name, new Animation(map, c.doesLoop()));
             return play;
         });
     }
 
     public void stopAll(BlockPos pos) {
-        Map<String, Map<String, Animation>> anims = playing.get(pos);
+        Map<String, Animation> anims = playing.remove(pos);
         if (anims == null) {
             return;
         }
-        anims.values().forEach(parts -> parts.values().forEach(Animation::stop));
+        anims.values().forEach(parts -> parts.components.values().forEach(AnimationComponent::stop));
     }
 
     /**
@@ -95,16 +95,16 @@ public class AnimationController {
      * and the index of currently playing component
      * @return the state of animation with given name at given pos
      */
-    public Animation getAnimation(BlockPos pos, String animName, String partName) {
-        Map<String, Map<String, Animation>> animations = playing.get(pos);
+    public AnimationComponent getAnimation(BlockPos pos, String animName, String partName) {
+        Map<String, Animation> animations = playing.get(pos);
         if (animations == null) {
             return null;
         }
-        Map<String, Animation> parts = animations.get(animName);
+        Animation parts = animations.get(animName);
         if (parts == null) {
             return null;
         }
-        return parts.get(partName);
+        return parts.components.get(partName);
     }
 
     public boolean isRunningAnimation(BlockPos pos) {
@@ -116,16 +116,16 @@ public class AnimationController {
      * @param pos the position of Statue block
      */
     public boolean tick(BlockPos pos) {
-        Map<String, Map<String, Animation>> playingAtPos = playing.get(pos);
+        Map<String, Animation> playingAtPos = playing.get(pos);
         if (playingAtPos == null) {
             return false;
         }
         playingAtPos.values().removeIf(remaining -> {
-            if (remaining.values().stream().anyMatch(Animation::shouldLoadIdentity)) {
+            if (remaining.shouldLoadIdentity()) {
                 ((OutlinedTabulaModel) ((StatueBlockEntity) world.getTileEntity(pos)).getModel()).resetToDefaultPose();
             }
-            remaining.values().removeIf(Animation::tick);
-            return remaining.isEmpty();
+            remaining.tick();
+            return remaining.components.isEmpty();
         });
         if (playingAtPos.keySet().isEmpty()) {
             playing.remove(pos);

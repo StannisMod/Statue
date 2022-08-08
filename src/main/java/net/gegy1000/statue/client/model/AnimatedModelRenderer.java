@@ -1,6 +1,6 @@
 package net.gegy1000.statue.client.model;
 
-import net.gegy1000.statue.client.Animation;
+import net.gegy1000.statue.client.AnimationComponent;
 import net.ilexiconn.llibrary.client.model.tabula.container.TabulaAnimationComponentContainer;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.GlStateManager;
@@ -32,13 +32,13 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
         if (snapshot == null) {
             snapshot = new AnimatedModelRenderer(getModel(), "", "", 0, 0, 0.0F);
         }
-        snapshot.rotateAngleX = this.rotateAngleX;
-        snapshot.rotateAngleY = this.rotateAngleY;
-        snapshot.rotateAngleZ = this.rotateAngleZ;
+        snapshot.rotateAngleX = this.rotateAngleX + (float) Math.toRadians(anim.getRotationOffset()[0]);
+        snapshot.rotateAngleY = this.rotateAngleY + (float) Math.toRadians(anim.getRotationOffset()[1]);
+        snapshot.rotateAngleZ = this.rotateAngleZ + (float) Math.toRadians(anim.getRotationOffset()[2]);
 
-        snapshot.defaultRotationX = this.defaultRotationX + (float) anim.getRotationOffset()[0];
-        snapshot.defaultRotationY = this.defaultRotationY + (float) anim.getRotationOffset()[1];
-        snapshot.defaultRotationZ = this.defaultRotationZ + (float) anim.getRotationOffset()[2];
+        snapshot.defaultRotationX = this.defaultRotationX;// + (float) Math.toRadians(anim.getRotationOffset()[0]);
+        snapshot.defaultRotationY = this.defaultRotationY;// + (float) Math.toRadians(anim.getRotationOffset()[1]);
+        snapshot.defaultRotationZ = this.defaultRotationZ;// + (float) Math.toRadians(anim.getRotationOffset()[2]);
 
         snapshot.rotationPointX = this.rotationPointX;
         snapshot.rotationPointY = this.rotationPointY;
@@ -71,9 +71,9 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
         }
         lastSeenTime = timer;
 
-        this.rotateAngleX = animate(snapshot.rotateAngleX, (float) Math.toRadians(to.getRotationOffset()[0] + to.getRotationChange()[0]), timer, maxTime, partialTicks);
-        this.rotateAngleY = animate(snapshot.rotateAngleY, (float) Math.toRadians(to.getRotationOffset()[1] + to.getRotationChange()[1]), timer, maxTime, partialTicks);
-        this.rotateAngleZ = animate(snapshot.rotateAngleZ, (float) Math.toRadians(to.getRotationOffset()[2] + to.getRotationChange()[2]), timer, maxTime, partialTicks);
+        this.rotateAngleX = animate(snapshot.rotateAngleX, (float) Math.toRadians(to.getRotationChange()[0]), timer, maxTime, partialTicks);
+        this.rotateAngleY = animate(snapshot.rotateAngleY, (float) Math.toRadians(to.getRotationChange()[1]), timer, maxTime, partialTicks);
+        this.rotateAngleZ = animate(snapshot.rotateAngleZ, (float) Math.toRadians(to.getRotationChange()[2]), timer, maxTime, partialTicks);
 
         this.rotationPointX = snapshot.rotationPointX;
         this.rotationPointY = snapshot.rotationPointY;
@@ -101,17 +101,17 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
     public void render(final float scale, final float partialTicks) {
         if (getModel().pos != null) {
             for (String animId : getModel().animations.keySet()) {
-                Animation animation = getModel().controller.getAnimation(getModel().pos, animId, identifier);
-                if (animation == null) {
+                AnimationComponent animationComponent = getModel().controller.getAnimation(getModel().pos, animId, identifier);
+                if (animationComponent == null) {
                     continue;
                 }
-                TabulaAnimationComponentContainer c = animation.getCurrentComponent();
+                TabulaAnimationComponentContainer c = animationComponent.getCurrentComponent();
                 if (c == null) {
                     continue;
                 }
 
                 // apply changes
-                this.transitionUsing(c, animation.getTimeLeft(), c.getLength(), partialTicks);
+                this.transitionUsing(c, animationComponent.getTimeLeft(), c.getLength(), partialTicks);
             }
         }
 
@@ -160,6 +160,7 @@ public class AnimatedModelRenderer extends OutlinedModelRenderer {
         this.scaleZ = 1.0F;
         this.hidden = false;
         this.opacity = defaultOpacity;
+        this.snapshot = null;
         lastSeenTime = -1;
     }
 }

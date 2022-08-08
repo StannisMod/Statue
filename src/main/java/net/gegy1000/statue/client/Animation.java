@@ -2,80 +2,40 @@ package net.gegy1000.statue.client;
 
 import net.ilexiconn.llibrary.client.model.tabula.container.TabulaAnimationComponentContainer;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Animation {
 
-    private int timeGlobal;
-    private int timeLeft;
-    private int duration;
-    private int index;
-
-    private final List<TabulaAnimationComponentContainer> components;
+    protected final Map<String, AnimationComponent> components = new HashMap<>();
     private final boolean doesLoop;
+    private final int endFrame;
 
-    public Animation(List<TabulaAnimationComponentContainer> components, boolean doesLoop) {
-        this.timeLeft = -1;
-        this.index = -1;
-        this.components = new ArrayList<>();
-        this.components.addAll(components);
+    private int timeGlobal = -1;
+
+    public Animation(Map<String, AnimationComponent> components, boolean doesLoop) {
+        this.components.putAll(components);
+        this.components.values().forEach(c -> c.setParent(this));
         this.doesLoop = doesLoop;
-        tick();
+        this.endFrame = components.values().stream().flatMapToInt(c ->
+                c.components.stream().mapToInt(TabulaAnimationComponentContainer::getEndKey)).max().orElse(0);
     }
 
-    /**
-     * Performs the tick of animation
-     * @return true if animation is ended
-     */
-    public boolean tick() {
-        if (timeLeft == -1 || timeLeft == duration) {
-            index++;
-            timeLeft = 0;
-            if (index >= components.size()) {
-                if (doesLoop && !components.isEmpty()) {
-                    index = 0;
-                    timeGlobal = 0;
-                } else {
-                    return true;
-                }
-            }
-            duration = components.get(index).getLength();
-        } else {
-            if (canPlayCurrentComponent()) {
-                timeLeft++;
-            }
-            timeGlobal++;
+    public void tick() {
+        if (doesLoop && timeGlobal == endFrame) {
+            timeGlobal = -1;
+            this.components.values().forEach(AnimationComponent::loop);
         }
-        return false;
+
+        timeGlobal++;
+        this.components.values().forEach(c -> c.tick(timeGlobal));
     }
 
-    private boolean canPlayCurrentComponent() {
-        if (index < 0) {
-            return false;
-        }
-        TabulaAnimationComponentContainer c = components.get(index);
-        return c.getStartKey() <= timeGlobal && timeGlobal <= c.getEndKey();
-    }
-
-    public void stop() {
-        index = -1;
-        timeLeft = -1;
-        components.clear();
-    }
-
-    public int getTimeLeft() {
-        return timeLeft;
+    public int getTimeGlobal() {
+        return timeGlobal;
     }
 
     public boolean shouldLoadIdentity() {
         return timeGlobal == 0;
-    }
-
-    public TabulaAnimationComponentContainer getCurrentComponent() {
-        if (!canPlayCurrentComponent()) {
-            return null;
-        }
-        return components.get(index);
     }
 }
