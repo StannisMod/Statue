@@ -22,9 +22,14 @@ public class Animation {
     }
 
     public void tick() {
-        if (doesLoop && timeGlobal == endFrame) {
-            timeGlobal = -1;
-            this.components.values().forEach(AnimationComponent::loop);
+        if (timeGlobal >= endFrame) {
+            if (doesLoop) {
+                timeGlobal = -1;
+                this.components.values().forEach(AnimationComponent::loop);
+            } else {
+                this.components.clear();
+                return;
+            }
         }
 
         timeGlobal++;

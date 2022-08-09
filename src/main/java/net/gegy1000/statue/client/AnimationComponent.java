@@ -16,7 +16,7 @@ public class AnimationComponent {
     protected final List<TabulaAnimationComponentContainer> components;
 
     public AnimationComponent(List<TabulaAnimationComponentContainer> components) {
-        this.timeLeft = -1;
+        this.timeLeft = 0;
         this.index = -1;
         this.components = new ArrayList<>();
         this.components.addAll(components);
@@ -25,14 +25,13 @@ public class AnimationComponent {
 
     /**
      * Performs the tick of animation
-     * @return true if animation is ended
      */
-    public boolean tick(int timeGlobal) {
-        if (timeLeft == -1 || timeLeft == duration) {
+    public void tick(int timeGlobal) {
+        if (timeLeft == 0 || timeLeft == duration) {
             index++;
-            timeLeft = 0;
+            timeLeft = 1;
             if (index >= components.size()) {
-                return true;
+                return;
             }
             duration = components.get(index).getLength();
         } else {
@@ -40,7 +39,6 @@ public class AnimationComponent {
                 timeLeft++;
             }
         }
-        return false;
     }
 
     private boolean canPlayCurrentComponent(int timeGlobal) {
@@ -57,7 +55,7 @@ public class AnimationComponent {
 
     public void stop() {
         index = -1;
-        timeLeft = -1;
+        timeLeft = 0;
         components.clear();
     }
 
