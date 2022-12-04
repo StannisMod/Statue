@@ -1,6 +1,7 @@
 package net.gegy1000.statue.server.message;
 
 import io.netty.buffer.ByteBuf;
+import net.gegy1000.statue.client.Animation;
 import net.gegy1000.statue.client.AnimationController;
 import net.gegy1000.statue.server.block.entity.StatueBlockEntity;
 import net.ilexiconn.llibrary.client.model.tools.AdvancedModelBase;
@@ -17,12 +18,16 @@ public class AnimationMessage extends AbstractMessage<AnimationMessage> {
 
     private String animation;
     private BlockPos pos;
+    private CommandPacket.Type commandType;
+    private String command;
 
     public AnimationMessage() {}
 
-    public AnimationMessage(final String animation, final BlockPos pos) {
+    public AnimationMessage(final String animation, final BlockPos pos, final CommandPacket.Type commandType, final String command) {
         this.animation = animation;
         this.pos = pos;
+        this.commandType = commandType;
+        this.command = command;
     }
 
     @Override
@@ -33,18 +38,21 @@ public class AnimationMessage extends AbstractMessage<AnimationMessage> {
             return;
         }
         ((AdvancedModelBase) te.getModel()).resetToDefaultPose();
-        AnimationController.get(player.world).start(message.pos, message.animation);
+        AnimationController.get(player.world).start(message.pos, message.animation)
+                .setLoopingCommand(message.commandType, message.command);
     }
 
     @Override
     public void onServerReceived(final MinecraftServer server, final AnimationMessage message, final EntityPlayer player, final MessageContext messageContext) {
-
+        // no stuff here
     }
 
     @Override
     public void fromBytes(final ByteBuf buf) {
         animation = ByteBufUtils.readUTF8String(buf);
         pos = new BlockPos(buf.readInt(), buf.readInt(), buf.readInt());
+        commandType = CommandPacket.Type.values()[buf.readInt()];
+        command = ByteBufUtils.readUTF8String(buf);
     }
 
     @Override
@@ -53,5 +61,7 @@ public class AnimationMessage extends AbstractMessage<AnimationMessage> {
         buf.writeInt(pos.getX());
         buf.writeInt(pos.getY());
         buf.writeInt(pos.getZ());
+        buf.writeInt(commandType.ordinal());
+        ByteBufUtils.writeUTF8String(buf, command);
     }
 }

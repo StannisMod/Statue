@@ -27,7 +27,7 @@ public class Statue {
     @SidedProxy(serverSide = "net.gegy1000.statue.server.ServerProxy", clientSide = "net.gegy1000.statue.client.ClientProxy")
     public static ServerProxy PROXY;
 
-    @NetworkWrapper({ SetModelMessage.class, CreateTextureMessage.class, TextureSectionMessage.class, RemoveTextureMessage.class, SetPropertiesMessage.class, SetLockedMessage.class, AnimationMessage.class, StopAnimationMessage.class })
+    @NetworkWrapper({ SetModelMessage.class, CreateTextureMessage.class, TextureSectionMessage.class, RemoveTextureMessage.class, SetPropertiesMessage.class, SetLockedMessage.class, AnimationMessage.class, StopAnimationMessage.class, CommandPacket.class })
     public static SimpleNetworkWrapper WRAPPER;
 
     public static DecimalFormat DEFAULT_FORMAT;
