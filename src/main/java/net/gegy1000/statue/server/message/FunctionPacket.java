@@ -5,13 +5,10 @@ import net.ilexiconn.llibrary.server.network.AbstractMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class CommandPacket extends AbstractMessage<CommandPacket> {
+public class FunctionPacket extends AbstractMessage<FunctionPacket> {
 
     public enum Type {
         PLAYER,
@@ -21,38 +18,39 @@ public class CommandPacket extends AbstractMessage<CommandPacket> {
     private Type type;
     private String command;
 
-    public CommandPacket() {
+    public FunctionPacket() {
     }
 
     @Override
-    public void onClientReceived(final Minecraft client, final CommandPacket message, final EntityPlayer player, final MessageContext messageContext) {
+    public void onClientReceived(final Minecraft client, final FunctionPacket message, final EntityPlayer player, final MessageContext messageContext) {
         // no stuff here
     }
 
     @Override
-    public void onServerReceived(final MinecraftServer server, final CommandPacket message, final EntityPlayer player, final MessageContext messageContext) {
+    public void onServerReceived(final MinecraftServer server, final FunctionPacket message, final EntityPlayer player, final MessageContext messageContext) {
+        String command = "function " + message.command;
         switch (message.type) {
             case PLAYER:
-                server.addScheduledTask(() -> server.commandManager.executeCommand(player, message.command));
+                server.addScheduledTask(() -> server.commandManager.executeCommand(player, command));
                 break;
             case SERVER:
                 server.addScheduledTask(() -> {
                     if (player.canUseCommand(2, "")) {
                         System.out.printf(
                                 "[Statue] Player %s trying to execute command %s without OP permissions%n",
-                                player.getName(), message.command
+                                player.getName(), command
                         );
-                        server.commandManager.executeCommand(server, message.command);
+                        server.commandManager.executeCommand(server, command);
                     }
                 });
                 break;
             default:
-                System.err.println("[CommandPacket] Received unknown type of command sender: " + message.type);
+                System.err.println("[FunctionPacket] Received unknown type of command sender: " + message.type);
                 break;
         }
     }
 
-    public CommandPacket(final Type type, final String command) {
+    public FunctionPacket(final Type type, final String command) {
         this.type = type;
         this.command = command;
     }

@@ -1,7 +1,6 @@
 package net.gegy1000.statue.server.message;
 
 import io.netty.buffer.ByteBuf;
-import net.gegy1000.statue.client.Animation;
 import net.gegy1000.statue.client.AnimationController;
 import net.gegy1000.statue.server.block.entity.StatueBlockEntity;
 import net.ilexiconn.llibrary.client.model.tools.AdvancedModelBase;
@@ -18,16 +17,18 @@ public class AnimationMessage extends AbstractMessage<AnimationMessage> {
 
     private String animation;
     private BlockPos pos;
-    private CommandPacket.Type commandType;
+    private FunctionPacket.Type commandType;
     private String command;
+    private int loops;
 
     public AnimationMessage() {}
 
-    public AnimationMessage(final String animation, final BlockPos pos, final CommandPacket.Type commandType, final String command) {
+    public AnimationMessage(final String animation, final BlockPos pos, final FunctionPacket.Type commandType, final String command, final int loops) {
         this.animation = animation;
         this.pos = pos;
         this.commandType = commandType;
         this.command = command;
+        this.loops = loops;
     }
 
     @Override
@@ -38,7 +39,7 @@ public class AnimationMessage extends AbstractMessage<AnimationMessage> {
             return;
         }
         ((AdvancedModelBase) te.getModel()).resetToDefaultPose();
-        AnimationController.get(player.world).start(message.pos, message.animation)
+        AnimationController.get(player.world).start(message.pos, message.animation, message.loops)
                 .setLoopingCommand(message.commandType, message.command);
     }
 
@@ -51,8 +52,9 @@ public class AnimationMessage extends AbstractMessage<AnimationMessage> {
     public void fromBytes(final ByteBuf buf) {
         animation = ByteBufUtils.readUTF8String(buf);
         pos = new BlockPos(buf.readInt(), buf.readInt(), buf.readInt());
-        commandType = CommandPacket.Type.values()[buf.readInt()];
+        commandType = FunctionPacket.Type.values()[buf.readInt()];
         command = ByteBufUtils.readUTF8String(buf);
+        loops = buf.readInt();
     }
 
     @Override
@@ -63,5 +65,6 @@ public class AnimationMessage extends AbstractMessage<AnimationMessage> {
         buf.writeInt(pos.getZ());
         buf.writeInt(commandType.ordinal());
         ByteBufUtils.writeUTF8String(buf, command);
+        buf.writeInt(loops);
     }
 }

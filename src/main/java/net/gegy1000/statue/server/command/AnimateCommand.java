@@ -4,13 +4,12 @@ import mcp.MethodsReturnNonnullByDefault;
 import net.gegy1000.statue.Statue;
 import net.gegy1000.statue.server.block.entity.StatueBlockEntity;
 import net.gegy1000.statue.server.message.AnimationMessage;
-import net.gegy1000.statue.server.message.CommandPacket;
+import net.gegy1000.statue.server.message.FunctionPacket;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.tileentity.CommandBlockBaseLogic;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
@@ -28,7 +27,7 @@ public class AnimateCommand extends CommandBase {
 
     @Override
     public String getUsage(final ICommandSender sender) {
-        return "/animate <animation> <x> <y> <z> [<command>] [server/player]";
+        return "/animate <animation> <x> <y> <z> <loop count> [<command>] [server/player]";
     }
 
     @Override
@@ -38,7 +37,7 @@ public class AnimateCommand extends CommandBase {
 
     @Override
     public void execute(final MinecraftServer server, final ICommandSender sender, final String[] args) throws CommandException {
-        if (args.length < 4 || args.length > 6) {
+        if (args.length < 5 || args.length > 7) {
             throw new WrongUsageException(getUsage(sender));
         }
         try {
@@ -51,14 +50,15 @@ public class AnimateCommand extends CommandBase {
             if (!(te instanceof StatueBlockEntity)) {
                 throw new WrongUsageException("There is no Statue at this coordinates");
             }
-            CommandPacket.Type commandType = CommandPacket.Type.PLAYER;
+            int loops = Integer.parseInt(args[4]);
+            FunctionPacket.Type commandType = FunctionPacket.Type.PLAYER;
             String command = "";
-            if (args.length > 4) {
-                command = args[4];
-                if (args.length > 5) {
-                    switch (args[5]) {
+            if (args.length > 5) {
+                command = args[5];
+                if (args.length > 6) {
+                    switch (args[6]) {
                         case "server":
-                            commandType = CommandPacket.Type.SERVER;
+                            commandType = FunctionPacket.Type.SERVER;
                             break;
                         case "player":
                             break;
@@ -68,7 +68,8 @@ public class AnimateCommand extends CommandBase {
                     }
                 }
             }
-            Statue.WRAPPER.sendToAllAround(new AnimationMessage(animation, pos, commandType, command), new NetworkRegistry.TargetPoint(sender.getEntityWorld().provider.getDimension(), x, y, z, 128));
+            Statue.WRAPPER.sendToAllAround(new AnimationMessage(animation, pos, commandType, command, loops),
+                    new NetworkRegistry.TargetPoint(sender.getEntityWorld().provider.getDimension(), x, y, z, 128));
         } catch (NumberFormatException e) {
             throw new WrongUsageException("Animation coordinates should be integers!");
         }

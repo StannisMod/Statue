@@ -42,7 +42,7 @@ public class AnimationController {
      * @param pos the position of Statue block
      * @param name the animation name that should be started
      */
-    public Animation start(BlockPos pos, String name) {
+    public Animation start(BlockPos pos, String name, int loops) {
         Animation[] dump = new Animation[1];
         playing.compute(pos, (k, play) -> {
             Map<String, AnimationComponent> map = new HashMap<>();
@@ -56,7 +56,7 @@ public class AnimationController {
             if (play == null) {
                 play = new HashMap<>();
             }
-            dump[0] = new Animation(map, c.doesLoop());
+            dump[0] = new Animation(map, c.doesLoop(), loops);
             play.put(name, dump[0]);
             return play;
         });
