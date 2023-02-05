@@ -50,7 +50,8 @@ public class AnimationComponent {
     }
 
     protected void loop() {
-        index = 0;
+        index = -1;
+        timeLeft = 0;
     }
 
     public void stop() {
