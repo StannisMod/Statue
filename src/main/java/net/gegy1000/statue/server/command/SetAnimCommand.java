@@ -48,17 +48,17 @@ public class SetAnimCommand extends CommandBase {
             }
             StatueBlockEntity te = (StatueBlockEntity) tew;
 
-            te.setProperty(StatueProperty.ROTATION_X, Integer.parseInt(args[3]));
-            te.setProperty(StatueProperty.ROTATION_Y, Integer.parseInt(args[4]));
-            te.setProperty(StatueProperty.ROTATION_Z, Integer.parseInt(args[5]));
+            te.setProperty(StatueProperty.ROTATION_X, Float.parseFloat(args[3]));
+            te.setProperty(StatueProperty.ROTATION_Y, Float.parseFloat(args[4]));
+            te.setProperty(StatueProperty.ROTATION_Z, Float.parseFloat(args[5]));
 
-            te.setProperty(StatueProperty.OFFSET_X, Integer.parseInt(args[6]));
-            te.setProperty(StatueProperty.OFFSET_Y, Integer.parseInt(args[7]));
-            te.setProperty(StatueProperty.OFFSET_Z, Integer.parseInt(args[8]));
+            te.setProperty(StatueProperty.OFFSET_X, Float.parseFloat(args[6]));
+            te.setProperty(StatueProperty.OFFSET_Y, Float.parseFloat(args[7]));
+            te.setProperty(StatueProperty.OFFSET_Z, Float.parseFloat(args[8]));
 
-            te.setProperty(StatueProperty.SCALE_X, Integer.parseInt(args[9]));
-            te.setProperty(StatueProperty.SCALE_Y, Integer.parseInt(args[10]));
-            te.setProperty(StatueProperty.SCALE_Z, Integer.parseInt(args[11]));
+            te.setProperty(StatueProperty.SCALE_X, Float.parseFloat(args[9]));
+            te.setProperty(StatueProperty.SCALE_Y, Float.parseFloat(args[10]));
+            te.setProperty(StatueProperty.SCALE_Z, Float.parseFloat(args[11]));
 
             te.setLocked(Boolean.parseBoolean(args[12]), false);
 
@@ -67,7 +67,7 @@ public class SetAnimCommand extends CommandBase {
             // /moveanim -8 64 137 -10 64 137
 
         } catch (NumberFormatException e) {
-            throw new WrongUsageException("Parameters should be integers!");
+            throw new WrongUsageException("Parameters should be integers of floats!");
         }
     }
 }
