@@ -25,7 +25,7 @@ public class MoveAnimCommand extends CommandBase {
 
     @Override
     public String getUsage(final ICommandSender sender) {
-        return "/moveanim <from x> <from y> <from z> <to x> <to y> <to z>";
+        return "/moveanim <from x> <from y> <from z> <to x> <to y> <to z> [remove origin]";
     }
 
     @Override
@@ -35,8 +35,13 @@ public class MoveAnimCommand extends CommandBase {
 
     @Override
     public void execute(final MinecraftServer server, final ICommandSender sender, final String[] args) throws CommandException {
-        if (args.length != 6) {
+        if (args.length != 6 && args.length != 7) {
             throw new WrongUsageException(getUsage(sender));
+        }
+
+        boolean removeOrigin = true;
+        if (args.length == 7) {
+            removeOrigin = Boolean.parseBoolean(args[6]);
         }
 
         try {
@@ -77,9 +82,11 @@ public class MoveAnimCommand extends CommandBase {
             }
             teNew.readFromNBT(tag);
 
-            // remove old block and TE
-            sender.getEntityWorld().setBlockToAir(from);
-            sender.getEntityWorld().removeTileEntity(from);
+            if (removeOrigin) {
+                // remove old block and TE
+                sender.getEntityWorld().setBlockToAir(from);
+                sender.getEntityWorld().removeTileEntity(from);
+            }
 
             teNew.sendTextureUpdates();
             teNew.markDirty();
