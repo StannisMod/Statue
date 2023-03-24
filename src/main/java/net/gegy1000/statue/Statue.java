@@ -4,6 +4,7 @@ import net.gegy1000.statue.client.AnimationController;
 import net.gegy1000.statue.server.ServerProxy;
 import net.gegy1000.statue.server.command.AnimateCommand;
 import net.gegy1000.statue.server.command.MoveAnimCommand;
+import net.gegy1000.statue.server.command.SetAnimCommand;
 import net.gegy1000.statue.server.command.StopAnimCommand;
 import net.gegy1000.statue.server.message.*;
 import net.ilexiconn.llibrary.server.network.NetworkWrapper;
@@ -61,6 +62,7 @@ public class Statue {
         event.registerServerCommand(new AnimateCommand());
         event.registerServerCommand(new StopAnimCommand());
         event.registerServerCommand(new MoveAnimCommand());
+        event.registerServerCommand(new SetAnimCommand());
     }
 
     @Mod.EventHandler

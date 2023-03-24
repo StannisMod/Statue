@@ -3,18 +3,8 @@ package net.gegy1000.statue.server.block.entity;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import net.gegy1000.statue.Statue;
-import net.gegy1000.statue.server.api.ImportFile;
-import net.gegy1000.statue.server.api.ModelProvider;
-import net.gegy1000.statue.server.api.ProviderHandler;
-import net.gegy1000.statue.server.api.StatueModel;
-import net.gegy1000.statue.server.api.StatueTexture;
-import net.gegy1000.statue.server.api.TextureProvider;
-import net.gegy1000.statue.server.message.CreateTextureMessage;
-import net.gegy1000.statue.server.message.RemoveTextureMessage;
-import net.gegy1000.statue.server.message.SetLockedMessage;
-import net.gegy1000.statue.server.message.SetModelMessage;
-import net.gegy1000.statue.server.message.SetPropertiesMessage;
-import net.gegy1000.statue.server.message.TextureSectionMessage;
+import net.gegy1000.statue.server.api.*;
+import net.gegy1000.statue.server.message.*;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -30,13 +20,7 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class StatueBlockEntity extends TileEntity implements ITickable {
     private static final int INTERP_TICKS = 10;
@@ -270,6 +254,12 @@ public class StatueBlockEntity extends TileEntity implements ITickable {
         this.load(provider, model);
         if (this.world.isRemote) {
             this.queuedMessages.add(new SetModelMessage(this.pos, this.statueModel, this.provider));
+        }
+    }
+
+    public void sendTextureUpdates() {
+        for (EntityPlayerMP player : world.getPlayers(EntityPlayerMP.class, o -> true)) {
+            this.watchChunk(player);
         }
     }
 

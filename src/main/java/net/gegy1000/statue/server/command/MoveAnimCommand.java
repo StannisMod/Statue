@@ -77,12 +77,11 @@ public class MoveAnimCommand extends CommandBase {
             }
             teNew.readFromNBT(tag);
 
-//            sender.getEntityWorld().setTileEntity(to, te);
-
             // remove old block and TE
             sender.getEntityWorld().setBlockToAir(from);
             sender.getEntityWorld().removeTileEntity(from);
 
+            teNew.sendTextureUpdates();
             teNew.markDirty();
             sender.getEntityWorld().notifyBlockUpdate(to, state, state, 3);
 
